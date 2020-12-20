@@ -5,7 +5,8 @@
 
 # Executable file "cstore" 
 server: server.o
-	gcc -o server server.o
+	# gcc -o server server.o -lcrypt
+	g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -Wall
 
 server.o: server.c
 	gcc -c server.c
@@ -16,6 +17,4 @@ connectTLS.o: connectTLS.o
 clean:
 	rm -f *~ *.o *.a
 
-# test: 
-	# add test
 #^^^This space must be a TAB!!.
