@@ -196,7 +196,7 @@ int main()
         my::print_errors_and_exit("Error loading server private key");
     }
 
-    auto accept_bio = my::UniquePtr<BIO>(BIO_new_accept("8080"));
+    auto accept_bio = my::UniquePtr<BIO>(BIO_new_accept("10000"));
     if (BIO_do_accept(accept_bio.get()) <= 0) {
         my::print_errors_and_exit("Error in BIO_do_accept (binding to port 8080)");
     }
