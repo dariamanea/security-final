@@ -1,4 +1,4 @@
-# This is the Makefile for cstore.c
+# This is the Makefile for server.c
 # To compile, simply type "make" at the command line.
 # To remove all object code, type "make clean" (this removes
 # all ".o" and ".a" files)
@@ -17,5 +17,5 @@ clean:
 	rm -f *~ *.o *.a
 
 # test: 
-	# ./build-cstore.sh
+	# add test
 #^^^This space must be a TAB!!.
