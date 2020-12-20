@@ -1,9 +1,8 @@
 #!/bin/bash
 
-
-mkdir Server
-cd Server
-mkdir bin users serverCert 
+mkdir Client
+cd Client
+mkdir bin encryptions certAuth users 
 cd users
 # make all users 
 # for each user: 
@@ -15,7 +14,7 @@ for i in ${input[@]}
 do
 	mkdir $i
     cd $i
-    mkdir mailbox hashedPasswords certificates 
+    mkdir publicKey certificates 
     cd ..
 done
 
