@@ -1,0 +1,1 @@
+V	301219182348Z		1000	unknown	/C=US/ST=New York/O=Daria Ltd/OU=Daria Ltd Certificate Authority/CN=Daria Intermediate Ltd Root CA/emailAddress=dem2184@columbia.edu
