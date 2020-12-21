@@ -155,5 +155,3 @@ extendedKeyUsage = critical, OCSPSigning
 [alt_names]
 DNS.1 = localhost
 DNS.2 = www.example.com
-IP.1 = 192.168.1.189
-IP.2 = 127.0.0.1
