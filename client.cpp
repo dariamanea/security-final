@@ -1,3 +1,5 @@
+//REPLACED BY LOGIN.CPP - Refer to that to as template to connect to server and send custom messages
+
 #include <memory>
 #include <stdarg.h>
 #include <stdexcept>
