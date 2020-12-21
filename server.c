@@ -67,16 +67,23 @@ int validateUsername(char *dirname, char *username) {
 
 /*
 This function looks for the given username in the fileName and stores 
-the whole line that begins with tha username in the parameter line_returned
+the whole line that begins with that username in the parameter line_returned
 */
 int findLine (char *fileName, char *username, char line_returned[]){
+    
     FILE* file = fopen(fileName, "r"); 
     char line[256];
+    char *found_username; 
+
     
     while (fgets(line, sizeof(line), file)) {
         strcpy(line_returned, line); 
-        username = strtok(line, " ");
-        if  (strcmp(username, "polypose") == 0)
+        found_username = strtok(line, " ");
+        // printf ("username given %s\n", username); 
+        // printf ("username found %s\n", found_username); 
+        // printf ("comapare %d\n", strcmp(found_username, username)); 
+
+        if  (strcmp(found_username, username) == 0)
         {
             PRINTDBG("FOUND!");
             break;
@@ -130,7 +137,7 @@ int checkPassword (char *username, char *givenPassword){
     char *salt=NULL;
     char *stored_password=NULL;
   
-    if (validateUsername("./Server/users", "polypose") == 0) 
+    if (validateUsername("./Server/users", username) == 0) 
         PRINTDBG("Found username!"); 
         else {
             PRINTDBG("This user was not found: '%s'\n", username);
@@ -141,6 +148,7 @@ int checkPassword (char *username, char *givenPassword){
 
     char *fName = "users.txt"; 
     char line[256]; 
+
     findLine(fName, username, line); 
     processLine(line, &username, &salt, &stored_password); 
     
@@ -159,6 +167,7 @@ int checkPassword (char *username, char *givenPassword){
                 PRINTDBG("bad\n");
                 return 1; 
         }
+        return 2; 
     }
 
 // TODO
@@ -175,7 +184,7 @@ int main(int argc, char *argv[])
    
         char password[100] = "";
         char username[100] = "";
-        strcpy(password, getpass("Enter username: ")); 
+        strcpy(username, getpass("Enter username: ")); 
         strcpy(password, getpass("Enter password: ")); 
 
 
@@ -184,6 +193,11 @@ int main(int argc, char *argv[])
 
         char *usr = (char *)malloc(strlen(username)+1);
          strcpy(usr,username);
+
+
+         PRINTDBG("password in main is %s\n", psw); 
+         PRINTDBG("user in main is %s\n", usr); 
+
 
 
         if (checkPassword(usr, psw) ==0) 
