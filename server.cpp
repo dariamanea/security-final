@@ -19,12 +19,17 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #include <string>
 #include <unistd.h>
 #include <vector>
+#include <sys/types.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdint.h>
+#include <stddef.h>
 
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
-#define MAXPW 32
 
 // #define DEBUG 1
 
@@ -35,17 +40,149 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #endif
 
 
-int checkPassword (char *username, char *hashed_password){
-// given hashed password and username, checks if it
-// matches the stored hashed password for that user.
 
+/*
+This function searches for the given username in the Server/users folder
+*/
+int validateUsername(char *dirname, char *username) {
+
+    // return 0 if username found
+    // return 1 if username not found
+	// return 2 if users folder can't be opened
+
+	DIR *dp;
+	struct dirent **list;
+	int i = 0 ; 
+
+	int count = scandir(dirname, &list, NULL, alphasort );	
+	if( count < 0 ){
+		//perror("Couldn't open the directory");
+		return 2;
+	 }
+	
+	//PRINTDBG("Recipient : %s : %d\n", recipient, strlen(recipient));
+	
+	for(i=0; i < count; i++) {
+		//PRINTDBG("dir: %s %d \n", list[i]->d_name, strlen(list[i]->d_name));
+		if (strcmp(list[i]->d_name, username) == 0) {
+			return 0;		
+		}	
+	}
+	 
+   	return 1;
 }
 
+/*
+This function looks for the given username in the fileName and stores 
+the whole line that begins with that username in the parameter line_returned
+*/
+int findLine (char *fileName, char *username, char line_returned[]){
+    
+    FILE* file = fopen(fileName, "r"); 
+    char line[256];
+    char *found_username; 
+
+    
+    while (fgets(line, sizeof(line), file)) {
+        strcpy(line_returned, line); 
+        found_username = strtok(line, " ");
+        // printf ("username given %s\n", username); 
+        // printf ("username found %s\n", found_username); 
+        // printf ("comapare %d\n", strcmp(found_username, username)); 
+
+        if  (strcmp(found_username, username) == 0)
+        {
+            PRINTDBG("FOUND!");
+            break;
+        }
+    }
+    
+    PRINTDBG("line is:  %s\n", line_returned); 
+    fclose(file);
+    return 0;
+}
+
+/*
+This function takes a line (supposed to be from users.txt), parses it by using strtok on white space
+and returns to the username, salt and password parameters
+the username, hashed pasword (salt) and password
+*****
+Ex. of line: 
+char line[] = "polypose $6$mojxgG.mliBuOu8B$yZqwF2jVIDiA8iddJd1OGz5HGdUnSunUDc/t/tjJ3OAd9fzfzqrxnaYH8ZA5kmpJprDcyhUy3Zvj5Py0FjG3L/ lure_leagued";
+*****
+*/
+int processLine(char line[], char **username, char **salt, char **password) {
+  
+  char * pch;
+  PRINTDBG ("Splitting string into tokens:\n");
+  pch = strtok(line, " ");
+  *username = pch; 
+
+  pch = strtok (NULL, " ");
+  *salt = pch; 
+
+  pch = strtok (NULL, " ");
+  *password = pch; 
+
+    PRINTDBG ("%s\n",*username);
+    PRINTDBG ("%s\n",*salt);
+    PRINTDBG ("%s\n",*password);
+
+  return 0;
+}
+
+int checkPassword (char *username, char *givenPassword){
+// given hashed password and username, checks if it
+// matches the stored hashed password for that user.
+    /*
+    1. check if username is in the user folder  
+    2. check if given password mathces with stored information
+    */
+
+    char *salt=NULL;
+    char *stored_password=NULL;
+  
+    if (validateUsername("./Server/users", username) == 0) 
+        PRINTDBG("Found username!"); 
+        else {
+            PRINTDBG("This user was not found: '%s'\n", username);
+            //return 1; 
+        }
+    
+    PRINTDBG("before process line \n");
+
+    char *fName = "users.txt"; 
+    char line[256]; 
+
+    findLine(fName, username, line); 
+    processLine(line, &username, &salt, &stored_password); 
+    
+    PRINTDBG("after  process line, stored psw is %s \n", stored_password);
+
+    //check 
+        char * c;
+        c = crypt (givenPassword, salt); 
+        if (strcmp(c, salt) == 0)
+        {
+                PRINTDBG("ok\n");
+                return 0; 
+        }
+        else
+        {
+                PRINTDBG("bad\n");
+                return 1; 
+        }
+        return 2; 
+    }
+
+// TODO
 int changePassword (){
     // given hashed password and username, 
     // deletes stored hashed password for user and adds new one
  
 }
+
+//**********************SERVER FUNCTIONS BELOW**************************
 
 namespace my {
 
@@ -154,7 +291,31 @@ std::string receive_http_message(BIO *bio)
     while (body.size() < content_length) {
         body += my::receive_some_data(bio);
     }
-    return headers + "\r\n" + body;
+
+    //check body
+    std::string delimiter = "\r\n";
+    std::string task = body.substr(0, body.find(delimiter));
+    if(task=="login"){
+	    printf("task is login\n");
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string username = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string password = body.substr(0, body.find(delimiter));
+	    
+	    int n = username.length();
+	    char usr[n+1];
+	    strcpy(usr, username.c_str());
+	    int m = password.length();
+	    char psw[m+1];
+	    strcpy(psw, password.c_str());
+	    printf("%s\n", usr);
+	    printf("%s\n", psw);
+	    if (checkPassword(usr, psw) == 0){
+		    return "Logged in successfully!\n";
+	    }
+
+    }
+    return "Wrong password or user.\n";
 }
 
 void send_http_response(BIO *bio, const std::string& body)
@@ -178,8 +339,11 @@ my::UniquePtr<BIO> accept_new_tcp_connection(BIO *accept_bio)
 
 } // namespace my
 
-int main()
+
+//*********************************MAIN FUNCTION***********************************
+int main(int argc, char *argv[])
 {
+
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     SSL_library_init();
     SSL_load_error_strings();
@@ -214,7 +378,7 @@ int main()
             std::string request = my::receive_http_message(bio.get());
             printf("Got request:\n");
             printf("%s\n", request.c_str());
-            my::send_http_response(bio.get(), "okay cool\n");
+            my::send_http_response(bio.get(), request);
         } catch (const std::exception& ex) {
             printf("Worker exited with exception:\n%s\n", ex.what());
         }
