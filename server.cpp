@@ -88,6 +88,7 @@ int storeMessage(std::string& target, std::string& msg){
     //std::string target = rcpts.substr(0, rcpts.find(delimiter));
     //rcpts.erase(0, rcpts.find(delimiter) + delimiter.length());
     
+    //*****************************************FILE PATH HERE***************************************
     char *path;
     path = (char *) malloc(151);
     strcpy(path, "mail/");
@@ -576,9 +577,14 @@ std::string receive_http_message(BIO *bio)
 	    if (checkPassword(usr, psw) == 1){
 		    return "Wrong password or user.\n";
 	    }
+        //************************FILE PATH here*******************************
+        char path[5] = "mail";
+        if (countFilesInDirectories(path, usr) > 0){
+            return "Please read mail before changing password\n";
+        }
         if (changePassword(usr, newpsw) == 0){
-            return "Password changed!";
-        } else return "Read mail before changing password";
+            return "Password changed!\n";
+        } else return "Password failed to update\n";
     }
     return "Reached end of checks - something went wrong I think.\n";
 }
