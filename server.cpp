@@ -577,7 +577,7 @@ std::string receive_http_message(BIO *bio)
 	    if (checkPassword(usr, psw) == 1){
 		    return "Wrong password or user.\n";
 	    }
-        //************************FILE PATH here*******************************
+        //*******************************FILE PATH here******************************************
         char path[5] = "mail";
         if (countFilesInDirectories(path, usr) > 0){
             return "Please read mail before changing password\n";
