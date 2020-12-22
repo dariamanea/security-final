@@ -82,6 +82,40 @@ int gen_user_certs (char *username){
     return 0; 
 }
 
+int gen_user_CSR (char *username, char **csr){
+    char *str = malloc(sizeof(char) * 100);
+    strcpy(str, "./generate_csr.sh ");
+    printf ("COMMAND IS : %s\n", str);
+    strcat(str, username); 
+    system(str);
+
+    printf ("COMMAND IS : %s\n", str);
+
+    char * buffer = 0;
+    long length;
+    FILE * f = fopen ("csr.txt", "rb");
+
+    if (f)
+    {
+    fseek (f, 0, SEEK_END);
+    length = ftell (f);
+    fseek (f, 0, SEEK_SET);
+    buffer = malloc (length);
+    if (buffer)
+    {
+        fread (buffer, 1, length, f);
+    }
+    fclose (f);
+    }
+    if (buffer)
+    {
+        *csr = buffer; 
+    }
+
+    free(str);
+    return 0; 
+}
+
 int gen_server_certs (){
     
     system("./server.sh");
@@ -235,20 +269,18 @@ int changePassword (){
 
 int main(int argc, char *argv[])
 {
-        // int count ; 
-        // char username[] = "neckar";
-        // example of calling the function that counts files in directory 
-        // count = countFilesInDirectories("Server/users", "polypose/mailbox"); 
-        // printf("count is %d\n", count);
+        char username[] = "corector";
+        char *csr; 
+        gen_CA_and_Interm_certs(); 
+        gen_user_CSR(username, &csr); 
+        printf("THIS IS the csr %s\n" , csr); 
 
-
-        // gen_CA_and_Interm_certs(); 
-        // gen_user_certs(username); 
-
+/*
         char password[100] = "";
         char username[100] = "";
         strcpy(username, getpass("Enter username: ")); 
         strcpy(password, getpass("Enter password: ")); 
+        
 
 
         char *psw = (char *)malloc(strlen(password)+1);
@@ -267,6 +299,6 @@ int main(int argc, char *argv[])
             printf("Logged in successfully!\n");
         else 
             printf ("Wrong password or user.\n");
-        
+        */
         return 0;
 }
