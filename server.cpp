@@ -25,6 +25,8 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #include <fcntl.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <iostream>
+#include <fstream>
 
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -44,51 +46,51 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 /*
 This function searches for the given username in the Server/users folder
 */
-int validateUsername(char *dirname, char *username) {
+int validateUsername(const char *dirname, char *username) {
 
     // return 0 if username found
     // return 1 if username not found
 	// return 2 if users folder can't be opened
 
-	DIR *dp;
+	//DIR *dp;
 	struct dirent **list;
-	int i = 0 ; 
+	int i = 0 ;
 
-	int count = scandir(dirname, &list, NULL, alphasort );	
+	int count = scandir(dirname, &list, NULL, alphasort );
 	if( count < 0 ){
 		//perror("Couldn't open the directory");
 		return 2;
 	 }
-	
+
 	//PRINTDBG("Recipient : %s : %d\n", recipient, strlen(recipient));
-	
+
 	for(i=0; i < count; i++) {
 		//PRINTDBG("dir: %s %d \n", list[i]->d_name, strlen(list[i]->d_name));
 		if (strcmp(list[i]->d_name, username) == 0) {
-			return 0;		
-		}	
+			return 0;
+		}
 	}
-	 
+
    	return 1;
 }
 
 /*
-This function looks for the given username in the fileName and stores 
+This function looks for the given username in the fileName and stores
 the whole line that begins with that username in the parameter line_returned
 */
-int findLine (char *fileName, char *username, char line_returned[]){
-    
-    FILE* file = fopen(fileName, "r"); 
-    char line[256];
-    char *found_username; 
+int findLine (const char *fileName, const char *username, char line_returned[]){
 
-    
+    FILE* file = fopen(fileName, "r");
+    char line[256];
+    char *found_username;
+
+
     while (fgets(line, sizeof(line), file)) {
-        strcpy(line_returned, line); 
+        strcpy(line_returned, line);
         found_username = strtok(line, " ");
-        // printf ("username given %s\n", username); 
-        // printf ("username found %s\n", found_username); 
-        // printf ("comapare %d\n", strcmp(found_username, username)); 
+        // printf ("username given %s\n", username);
+        // printf ("username found %s\n", found_username);
+        // printf ("comapare %d\n", strcmp(found_username, username));
 
         if  (strcmp(found_username, username) == 0)
         {
@@ -96,8 +98,8 @@ int findLine (char *fileName, char *username, char line_returned[]){
             break;
         }
     }
-    
-    PRINTDBG("line is:  %s\n", line_returned); 
+
+    PRINTDBG("line is:  %s\n", line_returned);
     fclose(file);
     return 0;
 }
@@ -107,22 +109,22 @@ This function takes a line (supposed to be from users.txt), parses it by using s
 and returns to the username, salt and password parameters
 the username, hashed pasword (salt) and password
 *****
-Ex. of line: 
+Ex. of line:
 char line[] = "polypose $6$mojxgG.mliBuOu8B$yZqwF2jVIDiA8iddJd1OGz5HGdUnSunUDc/t/tjJ3OAd9fzfzqrxnaYH8ZA5kmpJprDcyhUy3Zvj5Py0FjG3L/ lure_leagued";
 *****
 */
 int processLine(char line[], char **username, char **salt, char **password) {
-  
+
   char * pch;
   PRINTDBG ("Splitting string into tokens:\n");
   pch = strtok(line, " ");
-  *username = pch; 
+  *username = pch;
 
   pch = strtok (NULL, " ");
-  *salt = pch; 
+  *salt = pch;
 
   pch = strtok (NULL, " ");
-  *password = pch; 
+  *password = pch;
 
     PRINTDBG ("%s\n",*username);
     PRINTDBG ("%s\n",*salt);
@@ -135,51 +137,119 @@ int checkPassword (char *username, char *givenPassword){
 // given hashed password and username, checks if it
 // matches the stored hashed password for that user.
     /*
-    1. check if username is in the user folder  
+    1. check if username is in the user folder
     2. check if given password mathces with stored information
     */
 
     char *salt=NULL;
     char *stored_password=NULL;
-  
-    if (validateUsername("./Server/users", username) == 0) 
-        PRINTDBG("Found username!"); 
+
+    if (validateUsername("./Server/users", username) == 0)
+        PRINTDBG("Found username!");
         else {
             PRINTDBG("This user was not found: '%s'\n", username);
-            //return 1; 
+            //return 1;
         }
-    
+
     PRINTDBG("before process line \n");
 
-    char *fName = "users.txt"; 
-    char line[256]; 
+    const char *fName = "users.txt";
+    char line[256];
 
-    findLine(fName, username, line); 
-    processLine(line, &username, &salt, &stored_password); 
-    
+    findLine(fName, username, line);
+    processLine(line, &username, &salt, &stored_password);
+
     PRINTDBG("after  process line, stored psw is %s \n", stored_password);
 
-    //check 
+    //check
         char * c;
-        c = crypt (givenPassword, salt); 
+        c = crypt (givenPassword, salt);
         if (strcmp(c, salt) == 0)
         {
                 PRINTDBG("ok\n");
-                return 0; 
+                return 0;
         }
         else
         {
                 PRINTDBG("bad\n");
-                return 1; 
+                return 1;
         }
-        return 2; 
+        return 2;
     }
 
-// TODO
-int changePassword (){
-    // given hashed password and username, 
+
+
+int changePassword (char* username,char* newPassword){
+    // given newly added password and username,
     // deletes stored hashed password for user and adds new one
- 
+		// with the same salt
+
+		char *salt=NULL;
+    char *stored_password=NULL;
+		if (validateUsername("./Server/users", username) == 0) {
+			PRINTDBG("Found username!");
+		}
+    else {
+			PRINTDBG("This user was not found: '%s'\n", username);
+    }
+		PRINTDBG("before process line \n");
+
+		const char *fName = "users.txt";
+    char line[256];
+
+    findLine(fName, username, line);
+    processLine(line, &username, &salt, &stored_password);
+		char modify[100];
+		strcpy(modify, username);
+		strcat(modify," ");
+		char* newhash = crypt(newPassword,salt);
+		strcat(modify, newhash);
+		strcat(modify, " ");
+		strcat(modify, newPassword);
+
+
+		int delete_line = 0;
+		FILE* file = fopen(fName, "r");
+		char *found_username;
+    while (fgets(line, sizeof(line), file)) {
+        found_username = strtok(line, " ");
+        if  (strcmp(found_username, username) == 0)
+        {
+            PRINTDBG("FOUND!");
+            break;
+        }
+				delete_line += 1;
+    }
+
+		FILE *fileptr1, *fileptr2;
+		char ch;
+	  int temp = 1;
+		fileptr1 = fopen(fName, "r");
+		ch = getc(fileptr1);
+	   while (ch != EOF)
+	    {
+	        printf("%c", ch);
+	        ch = getc(fileptr1);
+	    }
+			rewind(fileptr1);
+			fileptr2 = fopen("replica.c", "w");
+			ch = getc(fileptr1);
+	    while (ch != EOF)
+	    {
+	        ch = getc(fileptr1);
+	        if (ch == '\n') temp++;
+	            if (temp != delete_line)
+	            {
+	                putc(ch, fileptr2);
+	            } else {
+									fputs(modify, fileptr2);
+							}
+	    }
+			fclose(fileptr1);
+	    fclose(fileptr2);
+	    remove(fName);
+			rename("replica.c", fName);
+    return 0;
 }
 
 //**********************SERVER FUNCTIONS BELOW**************************
@@ -291,7 +361,7 @@ std::string receive_http_message(BIO *bio)
     while (body.size() < content_length) {
         body += my::receive_some_data(bio);
     }
-
+		std::cout << "check body" << std::endl;
     //check body
     std::string delimiter = "\r\n";
     std::string task = body.substr(0, body.find(delimiter));
@@ -301,7 +371,7 @@ std::string receive_http_message(BIO *bio)
 	    std::string username = body.substr(0, body.find(delimiter));
 	    body.erase(0, body.find(delimiter) + delimiter.length());
 	    std::string password = body.substr(0, body.find(delimiter));
-	    
+
 	    int n = username.length();
 	    char usr[n+1];
 	    strcpy(usr, username.c_str());
@@ -384,4 +454,5 @@ int main(int argc, char *argv[])
         }
     }
     printf("\nClean exit!\n");
+
 }

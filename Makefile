@@ -3,13 +3,14 @@
 # To remove all object code, type "make clean" (this removes
 # all ".o" and ".a" files)
 
-# Executable file "cstore" 
+# Executable file "cstore"
 server: server.o
-	# gcc -o server server.o -lcrypt
-	g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -Wall
+	#gcc -o server server.o -lcrypt
+	g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lcrypt -Wall
 
-server.o: server.c
-	gcc -c server.c
+
+client: client.cpp
+	g++ -o client login.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lcrypt -Wall
 
 connectTLS.o: connectTLS.o
 	gcc -lssl -lcrypto connectTLS.c
