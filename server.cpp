@@ -27,11 +27,14 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #include <stddef.h>
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
+#define S_ISDIR(mode) __S_ISTYPE((mode), __S_IFDIR)
 
 #include <openssl/bio.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 
+using namespace std;
 
 // #define DEBUG 1
 
@@ -41,7 +44,135 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #define PRINTDBG(...)
 #endif
 
+//Found at: https://codeforwin.org/2018/03/c-program-check-file-or-directory-exists-not.html
+int isDirectoryExists(const char *path)
+{
 
+    struct stat stats;
+
+    stat(path, &stats);
+
+    // Check for file existence
+    if (S_ISDIR(stats.st_mode))
+        return 1;
+
+    return 0;
+}
+
+int countFilesInDirectories (char* dirname, char* recipient ) {
+	
+	DIR *dp;
+	struct dirent **list;
+	int i = 0 ; 
+	char mailbox[300];
+	
+	// generate mailbox path for recipient
+	strcpy(mailbox, dirname);
+	strcat(mailbox,"/");
+	strcat(mailbox,recipient);
+	//PRINTDBG("Mailbox: %s \n", mailbox);
+	
+	
+	int count = scandir(mailbox, &list, NULL, alphasort );
+	if( count < 0 ){
+		 //perror("Couldn't open the directory");
+		 exit(2);
+	 }
+
+	return count - 2;
+}
+
+//stores message from client in rcpt mailbox
+int storeMessage(std::string& target, std::string& msg){
+    //std::string delimiter = " ";
+    //std::string target = rcpts.substr(0, rcpts.find(delimiter));
+    //rcpts.erase(0, rcpts.find(delimiter) + delimiter.length());
+    printf("hello\n");
+    char *path;
+    path = (char *) malloc(151);
+    strcpy(path, "mail/");
+    strcat(path, target.c_str());
+    //cout << path << "\n";
+    printf("Entered function\n");
+    //Check valid rcpt
+    if(isDirectoryExists(path)==1){
+        printf("Directory found\n");
+        //check number of files in subdirectory
+        bool fileFound = false;
+        int i = 1;
+        char realFile[160];
+        //strcpy(realFile, path);
+        //strcat(realFile, "/");
+        while (fileFound == false){
+            char filePath[160];
+            strcpy(filePath, path);
+            //cout << filePath << "\n";
+            strcat(filePath, "/");
+            //cout << filePath << "\n";
+            if (i < 10){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "0000");
+                strcat(fileName, cFileNum);               
+                strcat(filePath, fileName);
+            } else if (i < 100){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "000");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else if (i < 1000){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "00");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else if (i < 10000){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "0");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else {
+                string fileNum = to_string(i);              
+                const char *cFileNum = fileNum.c_str(); 
+                strcat(filePath, cFileNum);               
+            }
+
+            strcat(filePath, ".txt");
+            //Check if file exists
+            ifstream checkFile;
+            checkFile.open(filePath);
+            if (checkFile) {
+                //cout << "file exists" << "\n";
+                i++;
+                checkFile.close();
+            } else {
+                //cout << "file does not exist" << "\n";
+                strcpy(realFile, filePath);
+                fileFound = true;
+            }
+        }
+
+        //Create file and write to it from stdin
+        //cout << realFile << "\n";
+        std::ofstream outfile (realFile);
+        //std::string line;
+
+
+        outfile << msg;
+
+        outfile.close();
+        free(path);
+        path = NULL;
+        return 0;
+    }
+    return 1;
+}
 
 /*
 This function searches for the given username in the Server/users folder
@@ -365,6 +496,8 @@ std::string receive_http_message(BIO *bio)
     //check body
     std::string delimiter = "\r\n";
     std::string task = body.substr(0, body.find(delimiter));
+    
+    //getcert response
     if(task=="login"){
 	    printf("task is login\n");
 	    body.erase(0, body.find(delimiter) + delimiter.length());
@@ -380,12 +513,45 @@ std::string receive_http_message(BIO *bio)
 	    strcpy(psw, password.c_str());
 	    printf("%s\n", usr);
 	    printf("%s\n", psw);
-	    if (checkPassword(usr, psw) == 0){
-		    return "Logged in successfully!\n";
+	    if (checkPassword(usr, psw) == 1){
+		    return "Wrong password or user.\n";
 	    }
-
+        
     }
-    return "Wrong password or user.\n";
+
+    //sendmsg response
+    if(task=="send"){
+        printf("task is send\n");
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string username = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string password = body.substr(0, body.find(delimiter));
+        body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string rcpt_list = body.substr(0, body.find(delimiter));
+        body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string msg = body.substr(0, body.find(delimiter));
+
+	    int n = username.length();
+	    char usr[n+1];
+	    strcpy(usr, username.c_str());
+	    int m = password.length();
+	    char psw[m+1];
+	    strcpy(psw, password.c_str());
+	    printf("%s\n", usr);
+	    printf("%s\n", psw);
+        if (checkPassword(usr, psw) == 1){
+		    return "Wrong password or user.\n";
+	    }
+        cout << "Hello\n";
+        cout << rcpt_list << "\n";
+        printf("%s\n", rcpt_list.c_str());
+        printf("%s\n", msg.c_str());
+        printf("Entering storeMessage\n");
+        if (storeMessage(rcpt_list, body) == 0){
+            return "Message sent!\n";
+        } else return "Message did not send\n";
+    }
+    return "Reached end of checks - something went wrong I think.\n";
 }
 
 void send_http_response(BIO *bio, const std::string& body)
