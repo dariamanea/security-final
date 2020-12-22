@@ -87,16 +87,16 @@ int storeMessage(std::string& target, std::string& msg){
     //std::string delimiter = " ";
     //std::string target = rcpts.substr(0, rcpts.find(delimiter));
     //rcpts.erase(0, rcpts.find(delimiter) + delimiter.length());
-    printf("hello\n");
+    
     char *path;
     path = (char *) malloc(151);
     strcpy(path, "mail/");
     strcat(path, target.c_str());
     //cout << path << "\n";
-    printf("Entered function\n");
+    
     //Check valid rcpt
     if(isDirectoryExists(path)==1){
-        printf("Directory found\n");
+        //printf("Directory found\n");
         //check number of files in subdirectory
         bool fileFound = false;
         int i = 1;
@@ -511,8 +511,8 @@ std::string receive_http_message(BIO *bio)
 	    int m = password.length();
 	    char psw[m+1];
 	    strcpy(psw, password.c_str());
-	    printf("%s\n", usr);
-	    printf("%s\n", psw);
+	    //printf("%s\n", usr);
+	    //printf("%s\n", psw);
 	    if (checkPassword(usr, psw) == 1){
 		    return "Wrong password or user.\n";
 	    }
@@ -537,19 +537,48 @@ std::string receive_http_message(BIO *bio)
 	    int m = password.length();
 	    char psw[m+1];
 	    strcpy(psw, password.c_str());
-	    printf("%s\n", usr);
-	    printf("%s\n", psw);
+	    //printf("%s\n", usr);
+	    //printf("%s\n", psw);
         if (checkPassword(usr, psw) == 1){
 		    return "Wrong password or user.\n";
 	    }
         cout << "Hello\n";
         cout << rcpt_list << "\n";
-        printf("%s\n", rcpt_list.c_str());
-        printf("%s\n", msg.c_str());
-        printf("Entering storeMessage\n");
+        //printf("%s\n", rcpt_list.c_str());
+        //printf("%s\n", msg.c_str());
+       //printf("Entering storeMessage\n");
         if (storeMessage(rcpt_list, body) == 0){
             return "Message sent!\n";
         } else return "Message did not send\n";
+    }
+
+    if (task == "newpass"){
+        printf("task is newpass\n");
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string username = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string password = body.substr(0, body.find(delimiter));
+        body.erase(0, body.find(delimiter) + delimiter.length());
+        std::string newpass = body.substr(0, body.find(delimiter));
+
+	    int n = username.length();
+	    char usr[n+1];
+	    strcpy(usr, username.c_str());
+	    int m = password.length();
+	    char psw[m+1];
+        strcpy(psw, password.c_str());
+        int p = newpass.length();
+        char newpsw[p+1];
+        strcpy(newpsw, newpass.c_str());
+	    
+	    //printf("%s\n", usr);
+	    //printf("%s\n", psw);
+	    if (checkPassword(usr, psw) == 1){
+		    return "Wrong password or user.\n";
+	    }
+        if (changePassword(usr, newpsw) == 0){
+            return "Password changed!";
+        } else return "Read mail before changing password";
     }
     return "Reached end of checks - something went wrong I think.\n";
 }
