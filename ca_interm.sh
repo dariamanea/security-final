@@ -4,6 +4,4 @@
 
 ./interm.sh
 
-./server.sh
-
-./client.sh
+# ./client.sh polypose
