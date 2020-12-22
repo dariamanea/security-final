@@ -177,7 +177,7 @@ void verify_the_certificate(SSL *ssl, const std::string& expected_hostname)
 
 int main(int argc, char *argv[])
 {
-	char *c;
+	//char *c;
 	std::string name = getpass("Enter username: ");
 	std::string pass = getpass("Enter username: ");
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
