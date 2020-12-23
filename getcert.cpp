@@ -7,6 +7,11 @@
 #include <string>
 #include <vector>
 #include <unistd.h>
+#include <iostream>
+#include <fstream>
+#include <bits/stdc++.h>
+#include <cstdint>
+#include <experimental/filesystem>
 #include <sys/types.h>
 #include <dirent.h>
 
@@ -14,6 +19,16 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
+#include <openssl/pem.h>
+#include <openssl/asn1.h>
+#include <openssl/conf.h>
+
+using namespace std;
+
+// Smart pointers to wrap openssl C types that need explicit free
+using BIO_ptr = std::unique_ptr<BIO, decltype(&BIO_free)>;
+using X509_ptr = std::unique_ptr<X509, decltype(&X509_free)>;
+using ASN1_TIME_ptr = std::unique_ptr<ASN1_TIME, decltype(&ASN1_STRING_free)>;
 
 
 /*
@@ -35,39 +50,6 @@ int gen_user_certs (char *username){
     return 0; 
 }
 
-int gen_user_CSR (char *username, char **csr){
-    char *str = (char*)malloc(sizeof(char) * 100);
-    strcpy(str, "./generate_csr.sh ");
-    printf ("COMMAND IS : %s\n", str);
-    strcat(str, username); 
-    system(str);
-
-    printf ("COMMAND IS : %s\n", str);
-
-    char * buffer = 0;
-    long length;
-    FILE * f = fopen ("csr.txt", "rb");
-
-    if (f)
-    {
-    fseek (f, 0, SEEK_END);
-    length = ftell (f);
-    fseek (f, 0, SEEK_SET);
-    buffer = (char*)malloc(length);
-    if (buffer)
-    {
-        fread (buffer, 1, length, f);
-    }
-    fclose (f);
-    }
-    if (buffer)
-    {
-        *csr = buffer; 
-    }
-
-    free(str);
-    return 0; 
-}
 
 int gen_server_certs (){
     
@@ -187,8 +169,11 @@ std::string receive_http_message(BIO *bio)
     return headers + "\r\n" + body;
 }
 
-void send_http_request(BIO *bio, const std::string& line, const std::string& host, const std::string& name, const std::string& pass)
+
+
+void send_http_request_login(BIO *bio, const std::string& line, const std::string& host, const std::string& name, const std::string& pass)
 {
+    
     std::string request = line + "\r\n";
     request += "Host: " + host + "\r\n";
     request += "\r\n";
@@ -201,6 +186,26 @@ void send_http_request(BIO *bio, const std::string& line, const std::string& hos
     BIO_write(bio, request.data(), request.size());
     BIO_flush(bio);
 }
+
+void send_http_request(BIO *bio, const std::string& header, const std::string& host, const std::string& task, const std::string& data)
+{
+    cout << "send_HTTP_request TASK is : " << task << endl;
+    std::string request = header + "\r\n";
+    request += "Host: " + host + "\r\n";
+    request += "\r\n";
+    
+    // set task
+    request +=  task + "\r\n";
+    
+    // set data
+    request += data + "\r\n";
+    
+    //request += pass + "\r\n";
+
+    BIO_write(bio, request.data(), request.size());
+    BIO_flush(bio);
+}
+
 
 SSL *get_ssl(BIO *bio)
 {
@@ -237,45 +242,107 @@ void verify_the_certificate(SSL *ssl, const std::string& expected_hostname)
 #endif
 }
 
+
+// Convert the contents of an openssl BIO to a std::string
+std::string bio_to_string(const BIO_ptr& bio, const int& max_len)
+{
+    // We are careful to do operations based on explicit lengths, not depending
+    // on null terminated character streams except where we ensure the terminator
+
+    // Create a buffer and zero it out
+    char buffer[max_len];
+    memset(buffer, 0, max_len);
+    // Read one smaller than the buffer to make sure we end up with a null
+    // terminator no matter what
+    BIO_read(bio.get(), buffer, max_len - 1);
+    return std::string(buffer);
+}
+
+
 } // namespace my
 
-int main(int argc, char *argv[])
-{
-	//char *c;
-	std::string name = getpass("Enter username: ");
-	std::string pass = getpass("Enter username: ");
-    char usr[name.length()+1];
-    strcpy(usr, name.c_str());
-    char *csr;
-    gen_user_CSR(usr, &csr);
-    printf("THIS IS the csr %s\n", csr);
+// generate User CSR
+int gen_user_CSR (char *username){
+    char *str =(char*) malloc (100);
+    (char*) malloc (100);
+    strcpy(str, "./generate_csr.sh ");
+    strcat(str, username); 
+    printf(str);
+    system(str); 
+    free(str);
+    return 0; 
+}
+
+std::string request_cert(BIO *bio, char *username){
+    
+    //generate user CSR    
+    gen_user_CSR(username);
+
+    std::string inFile = "csr.txt";
+    BIO_ptr input(BIO_new(BIO_s_file()), BIO_free);
+    if (BIO_read_filename(input.get(), inFile.c_str()) <= 0)
+    {
+        std::cout << "Error reading file" << endl;
+        return "Error readin file";
+    }
+
+    // Put the contents of the BIO into a C++ string    
+    std::string cert_details = my::bio_to_string(input, 42768);
+    BIO_reset(input.get());
+
+    // print CSR
+    // std::cout << "User CSR" << std::endl;
+    // std::cout << cert_details << std::endl;
+    // std::cout << std::endl;
+
+    // BIO_write(input.get(), cert_details, cert_details);
+
+    //send_http_request(BIO *bio, const std::string& header, const std::string& host, const std::string& task, const std::string& data)
+
+    // my::send_http_request(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", "sendCSR", cert_content.c_str());
+
+    my::send_http_request(bio, "POST / HTTP/1.1", "duckduckgo.com", "sendCSR", cert_details);
+    std::string response = my::receive_http_message(bio);
+    printf("%s", response.c_str()); 
+    
+    return cert_details; 
+}
+
+
+auto init_bio(){
+
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     SSL_library_init();
     SSL_load_error_strings();
 #endif
 
-    /* Set up the SSL context */
+/* Set up the SSL context */
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     auto ctx = my::UniquePtr<SSL_CTX>(SSL_CTX_new(SSLv23_client_method()));
 #else
     auto ctx = my::UniquePtr<SSL_CTX>(SSL_CTX_new(TLS_client_method()));
 #endif
-    if (SSL_CTX_load_verify_locations(ctx.get(), "server-certificate.pem", nullptr) != 1) {
-        my::print_errors_and_exit("Error setting up trust store");
-    }
+
+if (SSL_CTX_load_verify_locations(ctx.get(), "server-certificate.pem", nullptr) != 1) {
+    my::print_errors_and_exit("Error setting up trust store");
+}
+
 
     auto bio = my::UniquePtr<BIO>(BIO_new_connect("localhost:10000"));
-    if (bio == nullptr) {
-        my::print_errors_and_exit("Error in BIO_new_connect");
-    }
-    if (BIO_do_connect(bio.get()) <= 0) {
-        my::print_errors_and_exit("Error in BIO_do_connect");
-    }
-    auto ssl_bio = std::move(bio)
-        | my::UniquePtr<BIO>(BIO_new_ssl(ctx.get(), 1))
-        ;
-    SSL_set_tlsext_host_name(my::get_ssl(ssl_bio.get()), "duckduckgo.com");
+if (bio == nullptr) {
+    my::print_errors_and_exit("Error in BIO_new_connect");
+}
+if (BIO_do_connect(bio.get()) <= 0) {
+    my::print_errors_and_exit("Error in BIO_do_connect");
+}
+
+
+auto ssl_bio = std::move(bio)
+    | my::UniquePtr<BIO>(BIO_new_ssl(ctx.get(), 1))
+    ;
+SSL_set_tlsext_host_name(my::get_ssl(ssl_bio.get()), "duckduckgo.com");
+
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     SSL_set1_host(my::get_ssl(ssl_bio.get()), "duckduckgo.com");
 #endif
@@ -284,7 +351,31 @@ int main(int argc, char *argv[])
     }
     my::verify_the_certificate(my::get_ssl(ssl_bio.get()), "duckduckgo.com");
 
-    my::send_http_request(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", name, pass);
-    std::string response = my::receive_http_message(ssl_bio.get());
-    printf("%s", response.c_str());
+    return ssl_bio;
+
+    // my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", name, pass);
+    // std::string response = my::receive_http_message(ssl_bio.get());
+    // printf("%s", response.c_str());
+}
+
+int main(int argc, char *argv[])
+{
+
+cout << "Enter username: ";
+std::string name ;
+cin >> name;
+std::string pass = getpass("Enter password: ");
+char usr[name.length()+1];
+strcpy(usr, name.c_str());
+
+auto ssl_bio = init_bio();
+
+my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", name, pass);
+std::string response = my::receive_http_message(ssl_bio.get());
+printf("%s", response.c_str());
+
+auto ssl_bio2 = init_bio();
+// Second HTTP request that sends CSR to server
+std::string csr = request_cert(ssl_bio2.get(), usr);
+
 }

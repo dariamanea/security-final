@@ -91,8 +91,9 @@ int storeMessage(std::string& target, std::string& msg){
     //*****************************************FILE PATH HERE***************************************
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "mail/");
-    strcat(path, target.c_str());
+    strcpy(path, "Server/users/");
+    // strcat(path, target.c_str());
+    // strcat(path, "mailbox");
     //cout << path << "\n";
     
     //Check valid rcpt
@@ -149,7 +150,7 @@ int storeMessage(std::string& target, std::string& msg){
             ifstream checkFile;
             checkFile.open(filePath);
             if (checkFile) {
-                //cout << "file exists" << "\n";
+                // cout << "file exists" << "\n";
                 i++;
                 checkFile.close();
             } else {
@@ -447,7 +448,7 @@ public:
 
 std::string receive_some_data(BIO *bio)
 {
-    char buffer[1024];
+    char buffer[5000];
     int len = BIO_read(bio, buffer, sizeof(buffer));
     if (len < 0) {
         my::print_errors_and_throw("error in BIO_read");
@@ -497,6 +498,7 @@ std::string receive_http_message(BIO *bio)
     //check body
     std::string delimiter = "\r\n";
     std::string task = body.substr(0, body.find(delimiter));
+    cout << "task is from server.cpp : " + task << endl;  
     
     //getcert response
     if(task=="login"){
@@ -517,6 +519,7 @@ std::string receive_http_message(BIO *bio)
 	    if (checkPassword(usr, psw) == 1){
 		    return "Wrong password or user.\n";
 	    }
+        return "User logged in successfully.\n";
         
     }
 
@@ -555,10 +558,10 @@ std::string receive_http_message(BIO *bio)
 
     if (task == "newpass"){
         printf("task is newpass\n");
-	    body.erase(0, body.find(delimiter) + delimiter.length());
-	    std::string username = body.substr(0, body.find(delimiter));
-	    body.erase(0, body.find(delimiter) + delimiter.length());
-	    std::string password = body.substr(0, body.find(delimiter));
+        body.erase(0, body.find(delimiter) + delimiter.length());
+        std::string username = body.substr(0, body.find(delimiter));
+        body.erase(0, body.find(delimiter) + delimiter.length());
+        std::string password = body.substr(0, body.find(delimiter));
         body.erase(0, body.find(delimiter) + delimiter.length());
         std::string newpass = body.substr(0, body.find(delimiter));
 
@@ -586,6 +589,20 @@ std::string receive_http_message(BIO *bio)
             return "Password changed!\n";
         } else return "Password failed to update\n";
     }
+
+    // Receive CSR and return user certificate  
+    if(task=="sendCSR"){
+        printf("task is getcert\n");
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string data = body.substr(0, body.find(delimiter));
+	    int n = data.length();
+	    char data_content[n+1];
+	    strcpy(data_content, data.c_str());
+	    printf("%s\n", data_content);
+        return "CSR received!";
+	  
+    }
+
     return "Reached end of checks - something went wrong I think.\n";
 }
 
