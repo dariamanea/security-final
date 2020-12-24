@@ -15,7 +15,18 @@ sudo apt-get install libssl-dev
 ```
 
 I. SOURCE TREE CONTENTS
-
+```
+1. install-unpriv.sh
+2. getcert.cpp
+3. changepw.cpp
+4. sendmsg.cpp
+5. recvmsg.cpp
+6. server.cpp
+7. users.txt
+8. Makefile
+9. create-server-structure.sh
+10. create-client-structure.sh
+```
 
 
 II. HOW TO EXECUTE
