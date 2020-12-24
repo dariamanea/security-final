@@ -9,8 +9,17 @@ server: server.o
 	g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lcrypt -Wall
 
 
-client: client.cpp
-	g++ -o client login.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lcrypt -Wall
+getcert: getcert.cpp
+	g++ -o getcert getcert.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lcrypt -Wall
+	
+recvmsg: recvmsg.cpp
+	g++ -o recvmsg recvmsg.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -Wall
+	
+sendmsg: sendmsg.cpp
+	g++ -o sendmsg sendmsg.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -Wall
+	
+changepw: changepw.cpp
+	g++ -o changepw changepw.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -Wall
 
 connectTLS.o: connectTLS.o
 	gcc -lssl -lcrypto connectTLS.c
