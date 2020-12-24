@@ -43,6 +43,11 @@ sudo bash install-priv.sh
 4. Move to Client/bin and execute the four programs as a user:
 
 ./getcert, ./changepw, ./sendmsg, ./recvmsg
+
+Note:
+user logs in to sendmsg and recvmsg with username and password
+A message should be in a file in the Client/bin and user gives filename when prompted
+recvmsg prints message to stdout
 ```
 
 IV. ARCHITECTURE
