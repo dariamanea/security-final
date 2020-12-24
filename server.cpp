@@ -61,9 +61,9 @@ int isDirectoryExists(const char *path)
 
 int countFilesInDirectories (char* dirname, char* recipient ) {
 	
-	DIR *dp;
+	//DIR *dp;
 	struct dirent **list;
-	int i = 0 ; 
+	//int i = 0 ; 
 	char mailbox[300];
 	
 	// generate mailbox path for recipient
