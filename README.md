@@ -74,6 +74,9 @@ IV. ARCHITECTURE
 
 V. TESTING
 
+
+# Below is not part of submission
+
 Run the following commands in the same folder as server:
 
 ```
