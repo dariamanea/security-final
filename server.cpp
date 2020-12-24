@@ -87,8 +87,9 @@ std::string getMsg(char* username){
 
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "mail/");
+    strcpy(path, "../users");
     strcat(path, username);
+	strcat(path, "/mailbox");
 
     if(isDirectoryExists(path)==1){
         //printf("Directory found\n");
@@ -176,8 +177,9 @@ int storeMessage(std::string& target, std::string& msg){
     //*****************************************FILE PATH HERE***************************************
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "mail/");
+    strcpy(path, "../users");
     strcat(path, target.c_str());
+	strcat(path, "/mailbox");
     //cout << path << "\n";
 
     //Check valid rcpt
@@ -663,7 +665,7 @@ std::string receive_http_message(BIO *bio)
 		    return "Wrong password or user.\n";
 	    }
         //*******************************FILE PATH here******************************************
-        char path[5] = "mail";
+        char path[5] = "../users";
         if (countFilesInDirectories(path, usr) > 0){
             return "Please read mail before changing password\n";
         }
