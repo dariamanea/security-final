@@ -27,6 +27,7 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #include <stddef.h>
 #include <iostream>
 #include <fstream>
+#include <crypt.h>
 #include <sys/stat.h>
 #define S_ISDIR(mode) __S_ISTYPE((mode), __S_IFDIR)
 
@@ -462,7 +463,7 @@ int checkPassword (char *username, char *givenPassword){
     	                putc(ch, fileptr2);
     	            }
     	    }
-          putc('\n',fileptr2);
+         // putc('\n',fileptr2);
           fputs(modify.c_str(), fileptr2);
     			fclose(fileptr1);
     	    fclose(fileptr2);
