@@ -7,11 +7,12 @@ Daria Manea, Tony Li, Jacob Jordan
 
 
 0. DEPENDANCIES 
-
+```
 sudo apt-get update
 sudo apt-get install build-essential
 sudo apt-get install icdiff
 sudo apt-get install libssl-dev
+```
 
 I. SOURCE TREE CONTENTS
 
