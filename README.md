@@ -30,7 +30,20 @@ I. SOURCE TREE CONTENTS
 
 
 II. HOW TO EXECUTE
+```
+1. Move files to an empty directory
+2. Execute the following:
 
+sudo bash install-priv.sh
+
+3. Move to Server/bin and execute the following:
+
+./server
+
+4. Move to Client/bin and execute the four programs as a user:
+
+./getcert, ./changepw, ./sendmsg, ./recvmsg
+```
 
 IV. ARCHITECTURE
 ```
