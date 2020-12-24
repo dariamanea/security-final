@@ -2,7 +2,7 @@
 
 mkdir Client
 cd Client
-mkdir bin encryptions certAuth users 
+mkdir bin certAuth users 
 cd users
 
 
@@ -12,7 +12,7 @@ for i in ${input[@]}
 do
 	mkdir $i
     cd $i
-    mkdir publicKey certificates 
+    mkdir publicKey certificates mailbox
     cd ..
 done
 
