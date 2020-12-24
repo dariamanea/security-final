@@ -5,9 +5,11 @@ December 23, 2020
 
 Daria Manea, Tony Li, Jacob Jordan
 
--1. NOTES
+NOTES
 ```
-There were difficulties with properly implementing some of the certificate and encryption functions. In addition, we were not able to achieve the shedding and deshedding safety features as well as the containers we wanted.
+The script creates a shell user and group called "server" with password "security"
+There were difficulties with properly implementing some of the certificate and encryption functions. 
+In addition, we were not able to achieve the shedding and deshedding safety features as well as the containers we wanted.
 ```
 
 0. DEPENDANCIES 
@@ -52,6 +54,7 @@ Note:
 user logs in to sendmsg and recvmsg with username and password
 A message should be in a file in the Client/bin and user gives filename when prompted
 recvmsg prints message to stdout
+sendmsg can only accept one recipient at a time
 ```
 
 IV. ARCHITECTURE
@@ -84,7 +87,9 @@ The server is based on the example given here: https://quuxplusone.github.io/blo
 
 
 V. TESTING
-
+```
+Functionality testing was conducted to ensure a user can send and receive messages. There was also testing to make sure that a user password could not be read by others.
+```
 
 # Below is not part of submission
 
