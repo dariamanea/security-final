@@ -12,7 +12,7 @@ for i in ${input[@]}
 do
 	mkdir $i
     cd $i
-    mkdir publicKey certificates 
+    mkdir publicKey certificates mailbox
     cd ..
 done
 

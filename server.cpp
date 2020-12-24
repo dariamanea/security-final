@@ -61,19 +61,19 @@ int isDirectoryExists(const char *path)
 }
 
 int countFilesInDirectories (char* dirname, char* recipient ) {
-	
-	DIR *dp;
+
+	//DIR *dp;
 	struct dirent **list;
-	int i = 0 ; 
+	//int i = 0 ;
 	char mailbox[300];
-	
+
 	// generate mailbox path for recipient
 	strcpy(mailbox, dirname);
 	strcat(mailbox,"/");
 	strcat(mailbox,recipient);
 	//PRINTDBG("Mailbox: %s \n", mailbox);
-	
-	
+
+
 	int count = scandir(mailbox, &list, NULL, alphasort );
 	if( count < 0 ){
 		 //perror("Couldn't open the directory");
@@ -83,21 +83,14 @@ int countFilesInDirectories (char* dirname, char* recipient ) {
 	return count - 2;
 }
 
-//stores message from client in rcpt mailbox
-int storeMessage(std::string& target, std::string& msg){
-    //std::string delimiter = " ";
-    //std::string target = rcpts.substr(0, rcpts.find(delimiter));
-    //rcpts.erase(0, rcpts.find(delimiter) + delimiter.length());
-    
-    //*****************************************FILE PATH HERE***************************************
+std::string getMsg(char* username){
+    //*********************************************FILE PATH HERE******************************************
+
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "Server/users/");
-    // strcat(path, target.c_str());
-    // strcat(path, "mailbox");
-    //cout << path << "\n";
-    
-    //Check valid rcpt
+    strcpy(path, "mail/");
+    strcat(path, username);
+
     if(isDirectoryExists(path)==1){
         //printf("Directory found\n");
         //check number of files in subdirectory
@@ -117,7 +110,7 @@ int storeMessage(std::string& target, std::string& msg){
                 const char *cFileNum = fileNum.c_str();
                 char fileName[5];
                 strcpy(fileName, "0000");
-                strcat(fileName, cFileNum);               
+                strcat(fileName, cFileNum);
                 strcat(filePath, fileName);
             } else if (i < 100){
                 string fileNum = to_string(i);
@@ -141,9 +134,9 @@ int storeMessage(std::string& target, std::string& msg){
                 strcat(fileName, cFileNum);
                 strcat(filePath, fileName);
             } else {
-                string fileNum = to_string(i);              
-                const char *cFileNum = fileNum.c_str(); 
-                strcat(filePath, cFileNum);               
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                strcat(filePath, cFileNum);
             }
 
             strcat(filePath, ".txt");
@@ -151,7 +144,98 @@ int storeMessage(std::string& target, std::string& msg){
             ifstream checkFile;
             checkFile.open(filePath);
             if (checkFile) {
-                // cout << "file exists" << "\n";
+                //cout << "file exists" << "\n";
+                //i++;
+                std::string msg = "";
+                if(checkFile.is_open()){
+                    std::string tp;
+                    while(getline(checkFile, tp)){
+                        msg += tp + "\n";
+                    }
+                }
+                checkFile.close();
+                return msg;
+            } else {
+                //cout << "file does not exist" << "\n";
+                i++;
+                checkFile.close();
+                strcpy(realFile, filePath);
+                //fileFound = true;
+            }
+        }
+    }
+        std::string msg = "No messages";
+        return msg;
+}
+
+//stores message from client in rcpt mailbox
+int storeMessage(std::string& target, std::string& msg){
+    //std::string delimiter = " ";
+    //std::string target = rcpts.substr(0, rcpts.find(delimiter));
+    //rcpts.erase(0, rcpts.find(delimiter) + delimiter.length());
+
+    //*****************************************FILE PATH HERE***************************************
+    char *path;
+    path = (char *) malloc(151);
+    strcpy(path, "mail/");
+    strcat(path, target.c_str());
+    //cout << path << "\n";
+
+    //Check valid rcpt
+    if(isDirectoryExists(path)==1){
+        //printf("Directory found\n");
+        //check number of files in subdirectory
+        bool fileFound = false;
+        int i = 1;
+        char realFile[160];
+        //strcpy(realFile, path);
+        //strcat(realFile, "/");
+        while (fileFound == false){
+            char filePath[160];
+            strcpy(filePath, path);
+            //cout << filePath << "\n";
+            strcat(filePath, "/");
+            //cout << filePath << "\n";
+            if (i < 10){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "0000");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else if (i < 100){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "000");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else if (i < 1000){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "00");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else if (i < 10000){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "0");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else {
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                strcat(filePath, cFileNum);
+            }
+
+            strcat(filePath, ".txt");
+            //Check if file exists
+            ifstream checkFile;
+            checkFile.open(filePath);
+            if (checkFile) {
+                //cout << "file exists" << "\n";
                 i++;
                 checkFile.close();
             } else {
@@ -316,74 +400,75 @@ int changePassword (char* username,char* newPassword){
     // given newly added password and username,
     // deletes stored hashed password for user and adds new one
 		// with the same salt
+=======
 
-		char *salt=NULL;
-    char *stored_password=NULL;
-		if (validateUsername("./Server/users", username) == 0) {
-			PRINTDBG("Found username!");
-		}
-    else {
-			PRINTDBG("This user was not found: '%s'\n", username);
-    }
-		PRINTDBG("before process line \n");
+    		char *salt=NULL;
+        char *stored_password=NULL;
 
-		const char *fName = "users.txt";
-    char line[256];
-
-    findLine(fName, username, line);
-    processLine(line, &username, &salt, &stored_password);
-		char modify[100];
-		strcpy(modify, username);
-		strcat(modify," ");
-		char* newhash = crypt(newPassword,salt);
-		strcat(modify, newhash);
-		strcat(modify, " ");
-		strcat(modify, newPassword);
-
-
-		int delete_line = 0;
-		FILE* file = fopen(fName, "r");
-		char *found_username;
-    while (fgets(line, sizeof(line), file)) {
-        found_username = strtok(line, " ");
-        if  (strcmp(found_username, username) == 0)
-        {
-            PRINTDBG("FOUND!");
-            break;
+    		if (validateUsername("./Server/users", username) == 0) {
+    			PRINTDBG("Found username!");
+    		}
+        else {
+    			PRINTDBG("This user was not found: '%s'\n", username);
         }
-				delete_line += 1;
-    }
+    		PRINTDBG("before process line \n");
 
-		FILE *fileptr1, *fileptr2;
-		char ch;
-	  int temp = 1;
-		fileptr1 = fopen(fName, "r");
-		ch = getc(fileptr1);
-	   while (ch != EOF)
-	    {
-	        printf("%c", ch);
-	        ch = getc(fileptr1);
-	    }
-			rewind(fileptr1);
-			fileptr2 = fopen("replica.c", "w");
-			ch = getc(fileptr1);
-	    while (ch != EOF)
-	    {
-	        ch = getc(fileptr1);
-	        if (ch == '\n') temp++;
-	            if (temp != delete_line)
-	            {
-	                putc(ch, fileptr2);
-	            } else {
-									fputs(modify, fileptr2);
-							}
-	    }
-			fclose(fileptr1);
-	    fclose(fileptr2);
-	    remove(fName);
-			rename("replica.c", fName);
-    return 0;
-}
+    		const char *fName = "users.txt";
+        char line[256];
+
+        findLine(fName, username, line);
+
+        processLine(line, &username, &salt, &stored_password);
+
+        const char* newsalt = crypt_gensalt(salt,0,newPassword,strlen(newPassword));
+        char* newhash = crypt(newPassword,newsalt);
+
+
+        std::string modify = std::string(username) + " " + std::string(newhash) + " " + newPassword;
+        std::string str(username);
+
+    		int delete_line = 0;
+    		FILE* file = fopen(fName, "r");
+    		char *found_username;
+
+        while (fgets(line, sizeof(line), file)) {
+            found_username = strtok(line, " ");
+            if  (strcmp(found_username, str.c_str()) == 0)
+            {
+                PRINTDBG("FOUND!");
+                break;
+            }
+            delete_line += 1;
+        }
+
+    		FILE *fileptr1, *fileptr2;
+    		char ch;
+    	  int temp = 0;
+    		fileptr1 = fopen(fName, "r");
+    		ch = getc(fileptr1);
+    	   while (ch != EOF) {
+    	        ch = getc(fileptr1);
+    	    }
+    			rewind(fileptr1);
+    			fileptr2 = fopen("replica.c", "w");
+    			ch = getc(fileptr1);
+    	    while (ch != EOF)
+    	    {
+    	        ch = getc(fileptr1);
+    	        if (ch == '\n') temp++;
+    	            if (temp != delete_line)
+    	            {
+    	                putc(ch, fileptr2);
+    	            }
+    	    }
+          putc('\n',fileptr2);
+          fputs(modify.c_str(), fileptr2);
+    			fclose(fileptr1);
+    	    fclose(fileptr2);
+    	    remove(fName);
+    			rename("replica.c", fName);
+        return 0;
+    }
 
 */
 
@@ -462,7 +547,7 @@ public:
 
 std::string receive_some_data(BIO *bio)
 {
-    char buffer[5000];
+    char buffer[1024];
     int len = BIO_read(bio, buffer, sizeof(buffer));
     if (len < 0) {
         my::print_errors_and_throw("error in BIO_read");
@@ -512,8 +597,7 @@ std::string receive_http_message(BIO *bio)
     //check body
     std::string delimiter = "\r\n";
     std::string task = body.substr(0, body.find(delimiter));
-    cout << "task is from server.cpp : " + task << endl;  
-    
+
     //getcert response
     if(task=="login"){
 	    printf("task is login\n");
@@ -530,11 +614,10 @@ std::string receive_http_message(BIO *bio)
 	    strcpy(psw, password.c_str());
 	    //printf("%s\n", usr);
 	    //printf("%s\n", psw);
-	    if (checkPassword(usr, psw) == 1){
-		    return "Wrong password or user.\n";
+	    if (checkPassword(usr, psw) == 0){
+		    return "Logged in.\n";
 	    }
-        return "User logged in successfully.\n";
-        
+
     }
 
     //sendmsg response
@@ -573,10 +656,10 @@ std::string receive_http_message(BIO *bio)
 /*
     if (task == "newpass"){
         printf("task is newpass\n");
-        body.erase(0, body.find(delimiter) + delimiter.length());
-        std::string username = body.substr(0, body.find(delimiter));
-        body.erase(0, body.find(delimiter) + delimiter.length());
-        std::string password = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string username = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string password = body.substr(0, body.find(delimiter));
         body.erase(0, body.find(delimiter) + delimiter.length());
         std::string newpass = body.substr(0, body.find(delimiter));
 
@@ -589,7 +672,7 @@ std::string receive_http_message(BIO *bio)
         int p = newpass.length();
         char newpsw[p+1];
         strcpy(newpsw, newpass.c_str());
-	    
+
 	    //printf("%s\n", usr);
 	    //printf("%s\n", psw);
 	    if (checkPassword(usr, psw) == 1){
@@ -625,7 +708,7 @@ std::string receive_http_message(BIO *bio)
 	    strcpy(data_content, data.c_str());
 	    printf("%s\n", data_content);
 
-        // W`rites CSR to a file
+        // Writes CSR to a file
         std::ofstream outfile ("server_csr.txt");
         outfile << data_content << std::endl;
         outfile.close();    
@@ -641,6 +724,27 @@ std::string receive_http_message(BIO *bio)
 	  
     }
 
+    if(task=="recv"){
+	    printf("task is login\n");
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string username = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string password = body.substr(0, body.find(delimiter));
+
+	    int n = username.length();
+	    char usr[n+1];
+	    strcpy(usr, username.c_str());
+	    int m = password.length();
+	    char psw[m+1];
+	    strcpy(psw, password.c_str());
+	    //printf("%s\n", usr);
+	    //printf("%s\n", psw);
+	    if (checkPassword(usr, psw) == 1){
+		    return "Incorrect username or password.\n";
+	    }
+        return getMsg(usr);
+
+    }
     return "Reached end of checks - something went wrong I think.\n";
 }
 
