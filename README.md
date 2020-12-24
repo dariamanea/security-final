@@ -5,6 +5,10 @@ December 23, 2020
 
 Daria Manea, Tony Li, Jacob Jordan
 
+-1. NOTES
+```
+There were difficulties with properly implementing some of the certificate and encryption functions. In addition, we were not able to achieve the shedding and deshedding safety features as well as the containers we wanted.
+```
 
 0. DEPENDANCIES 
 ```
@@ -52,6 +56,8 @@ recvmsg prints message to stdout
 
 IV. ARCHITECTURE
 ```
+The server is based on the example given here: https://quuxplusone.github.io/blog/2020/01/24/openssl-part-1/ to create HTTPS server and clients with TLS handshake. The client programs edit the HTTPS message and the server reads the top line of the body to determine what is requested. The server file is also set to user and group security, with g+s bit enabled as well.
+
 >Home Directory
   >Server
     >bin
