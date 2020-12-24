@@ -26,6 +26,8 @@ IV. ARCHITECTURE
 >Home Directory
   >Server
     >bin
+      >server.cpp
+      >users.txt
     >users
       >example user
         >certificate
@@ -33,6 +35,10 @@ IV. ARCHITECTURE
     >serverCert
   >Client
     >bin
+      >getcert.cpp
+      >changepw.cpp
+      >sendmsg.cpp
+      >recvmsg.cpp
     >users
       >example user
         >certificate
