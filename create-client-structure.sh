@@ -2,7 +2,7 @@
 
 mkdir Client
 cd Client
-mkdir bin encryptions certAuth users 
+mkdir bin certAuth users 
 cd users
 
 
