@@ -3,7 +3,7 @@ Final project for Security I
 
 December 23, 2020
 
-Daria Manea, Tony Li, Jacob Jordan
+Daria Manea, Qiran (Tony) Li, Jacob Jordan
 
 NOTES
 ```
