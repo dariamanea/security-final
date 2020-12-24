@@ -27,6 +27,7 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #include <stddef.h>
 #include <iostream>
 #include <fstream>
+#include <crypt.h>
 #include <sys/stat.h>
 #define S_ISDIR(mode) __S_ISTYPE((mode), __S_IFDIR)
 #include <streambuf>
@@ -88,8 +89,9 @@ std::string getMsg(char* username){
 
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "mail/");
+    strcpy(path, "../users");
     strcat(path, username);
+	strcat(path, "/mailbox");
 
     if(isDirectoryExists(path)==1){
         //printf("Directory found\n");
@@ -177,8 +179,9 @@ int storeMessage(std::string& target, std::string& msg){
     //*****************************************FILE PATH HERE***************************************
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "mail/");
+    strcpy(path, "../users");
     strcat(path, target.c_str());
+	strcat(path, "/mailbox");
     //cout << path << "\n";
 
     //Check valid rcpt
@@ -462,7 +465,7 @@ int checkPassword (char *username, char *givenPassword){
     	                putc(ch, fileptr2);
     	            }
     	    }
-          putc('\n',fileptr2);
+         // putc('\n',fileptr2);
           fputs(modify.c_str(), fileptr2);
     			fclose(fileptr1);
     	    fclose(fileptr2);
@@ -682,7 +685,7 @@ std::string receive_http_message(BIO *bio)
 		    return "Wrong password or user.\n";
 	    }
         //*******************************FILE PATH here******************************************
-        char path[5] = "mail";
+        char path[5] = "../users";
         if (countFilesInDirectories(path, usr) > 0){
             return "Please read mail before changing password\n";
         }
