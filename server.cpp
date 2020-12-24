@@ -82,6 +82,91 @@ int countFilesInDirectories (char* dirname, char* recipient ) {
 	return count - 2;
 }
 
+std::string getMsg(char* username){
+    //*********************************************FILE PATH HERE******************************************
+
+    char *path;
+    path = (char *) malloc(151);
+    strcpy(path, "mail/");
+    strcat(path, username);
+
+    if(isDirectoryExists(path)==1){
+        //printf("Directory found\n");
+        //check number of files in subdirectory
+        bool fileFound = false;
+        int i = 1;
+        char realFile[160];
+        //strcpy(realFile, path);
+        //strcat(realFile, "/");
+        while (fileFound == false){
+            char filePath[160];
+            strcpy(filePath, path);
+            //cout << filePath << "\n";
+            strcat(filePath, "/");
+            //cout << filePath << "\n";
+            if (i < 10){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "0000");
+                strcat(fileName, cFileNum);               
+                strcat(filePath, fileName);
+            } else if (i < 100){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "000");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else if (i < 1000){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "00");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else if (i < 10000){
+                string fileNum = to_string(i);
+                const char *cFileNum = fileNum.c_str();
+                char fileName[5];
+                strcpy(fileName, "0");
+                strcat(fileName, cFileNum);
+                strcat(filePath, fileName);
+            } else {
+                string fileNum = to_string(i);              
+                const char *cFileNum = fileNum.c_str(); 
+                strcat(filePath, cFileNum);               
+            }
+
+            strcat(filePath, ".txt");
+            //Check if file exists
+            ifstream checkFile;
+            checkFile.open(filePath);
+            if (checkFile) {
+                //cout << "file exists" << "\n";
+                //i++;
+                std::string msg = "";
+                if(checkFile.is_open()){
+                    std::string tp;
+                    while(getline(checkFile, tp)){
+                        msg += tp + "\n";
+                    }
+                }
+                checkFile.close();
+                return msg;
+            } else {
+                //cout << "file does not exist" << "\n";
+                i++;
+                checkFile.close();
+                strcpy(realFile, filePath);
+                //fileFound = true;
+            }
+        }
+    }
+        std::string msg = "No messages";
+        return msg;
+}
+
 //stores message from client in rcpt mailbox
 int storeMessage(std::string& target, std::string& msg){
     //std::string delimiter = " ";
@@ -91,9 +176,8 @@ int storeMessage(std::string& target, std::string& msg){
     //*****************************************FILE PATH HERE***************************************
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "Server/users/");
-    // strcat(path, target.c_str());
-    // strcat(path, "mailbox");
+    strcpy(path, "mail/");
+    strcat(path, target.c_str());
     //cout << path << "\n";
     
     //Check valid rcpt
@@ -150,7 +234,7 @@ int storeMessage(std::string& target, std::string& msg){
             ifstream checkFile;
             checkFile.open(filePath);
             if (checkFile) {
-                // cout << "file exists" << "\n";
+                //cout << "file exists" << "\n";
                 i++;
                 checkFile.close();
             } else {
@@ -448,7 +532,7 @@ public:
 
 std::string receive_some_data(BIO *bio)
 {
-    char buffer[5000];
+    char buffer[1024];
     int len = BIO_read(bio, buffer, sizeof(buffer));
     if (len < 0) {
         my::print_errors_and_throw("error in BIO_read");
@@ -498,7 +582,6 @@ std::string receive_http_message(BIO *bio)
     //check body
     std::string delimiter = "\r\n";
     std::string task = body.substr(0, body.find(delimiter));
-    cout << "task is from server.cpp : " + task << endl;  
     
     //getcert response
     if(task=="login"){
@@ -516,10 +599,9 @@ std::string receive_http_message(BIO *bio)
 	    strcpy(psw, password.c_str());
 	    //printf("%s\n", usr);
 	    //printf("%s\n", psw);
-	    if (checkPassword(usr, psw) == 1){
-		    return "Wrong password or user.\n";
+	    if (checkPassword(usr, psw) == 0){
+		    return "Logged in.\n";
 	    }
-        return "User logged in successfully.\n";
         
     }
 
@@ -558,10 +640,10 @@ std::string receive_http_message(BIO *bio)
 
     if (task == "newpass"){
         printf("task is newpass\n");
-        body.erase(0, body.find(delimiter) + delimiter.length());
-        std::string username = body.substr(0, body.find(delimiter));
-        body.erase(0, body.find(delimiter) + delimiter.length());
-        std::string password = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string username = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string password = body.substr(0, body.find(delimiter));
         body.erase(0, body.find(delimiter) + delimiter.length());
         std::string newpass = body.substr(0, body.find(delimiter));
 
@@ -589,20 +671,27 @@ std::string receive_http_message(BIO *bio)
             return "Password changed!\n";
         } else return "Password failed to update\n";
     }
-
-    // Receive CSR and return user certificate  
-    if(task=="sendCSR"){
-        printf("task is getcert\n");
+    if(task=="recv"){
+	    printf("task is login\n");
 	    body.erase(0, body.find(delimiter) + delimiter.length());
-	    std::string data = body.substr(0, body.find(delimiter));
-	    int n = data.length();
-	    char data_content[n+1];
-	    strcpy(data_content, data.c_str());
-	    printf("%s\n", data_content);
-        return "CSR received!";
-	  
-    }
+	    std::string username = body.substr(0, body.find(delimiter));
+	    body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string password = body.substr(0, body.find(delimiter));
 
+	    int n = username.length();
+	    char usr[n+1];
+	    strcpy(usr, username.c_str());
+	    int m = password.length();
+	    char psw[m+1];
+	    strcpy(psw, password.c_str());
+	    //printf("%s\n", usr);
+	    //printf("%s\n", psw);
+	    if (checkPassword(usr, psw) == 1){
+		    return "Incorrect username or password.\n";
+	    }
+        return getMsg(usr);
+        
+    }
     return "Reached end of checks - something went wrong I think.\n";
 }
 
