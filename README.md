@@ -52,6 +52,7 @@ Note:
 user logs in to sendmsg and recvmsg with username and password
 A message should be in a file in the Client/bin and user gives filename when prompted
 recvmsg prints message to stdout
+sendmsg can only accept one recipient at a time
 ```
 
 IV. ARCHITECTURE
@@ -84,7 +85,9 @@ The server is based on the example given here: https://quuxplusone.github.io/blo
 
 
 V. TESTING
-
+```
+Functionality testing was conducted to ensure a user can send and receive messages. There was also testing to make sure that a user password could not be read by others.
+```
 
 # Below is not part of submission
 
