@@ -5,7 +5,7 @@ December 23, 2020
 
 Daria Manea, Tony Li, Jacob Jordan
 
--1. NOTES
+NOTES
 ```
 The script creates a shell user and group called "server" with password "security"
 There were difficulties with properly implementing some of the certificate and encryption functions. 
