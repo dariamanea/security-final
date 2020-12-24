@@ -22,7 +22,24 @@ II. HOW TO EXECUTE
 
 
 IV. ARCHITECTURE
-
+```
+>Home Directory
+  >Server
+    >bin
+    >users
+      >example user
+        >certificate
+        >mailbox
+    >serverCert
+  >Client
+    >bin
+    >users
+      >example user
+        >certificate
+        >mailbox
+        >hashedPassword
+    >certAuth
+```
 
 
 V. TESTING
