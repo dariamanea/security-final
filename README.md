@@ -7,7 +7,9 @@ Daria Manea, Tony Li, Jacob Jordan
 
 -1. NOTES
 ```
-There were difficulties with properly implementing some of the certificate and encryption functions. In addition, we were not able to achieve the shedding and deshedding safety features as well as the containers we wanted.
+The script creates a shell user and group called "server" with password "security"
+There were difficulties with properly implementing some of the certificate and encryption functions. 
+In addition, we were not able to achieve the shedding and deshedding safety features as well as the containers we wanted.
 ```
 
 0. DEPENDANCIES 
