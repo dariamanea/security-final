@@ -395,21 +395,13 @@ int checkPassword (char *username, char *givenPassword){
         return 2; 
     }
 
-<<<<<<< HEAD
 /*
-int changePassword (char* username,char* newPassword){
-    // given newly added password and username,
-    // deletes stored hashed password for user and adds new one
-		// with the same salt
-=======
-=======
-
+   
 
     int changePassword (char* username,const char* newPassword) {
         // given newly added password and username,
         // deletes stored hashed password for user and adds new one
     		// with the same salt
->>>>>>> a8a9242e0d265477c5e0e0909ee214598ec15214
 
     		char *salt=NULL;
         char *stored_password=NULL;
@@ -492,34 +484,7 @@ int gen_user_cert (char *username){
     return 0; 
 }
 
-    		FILE *fileptr1, *fileptr2;
-    		char ch;
-    	  int temp = 0;
-    		fileptr1 = fopen(fName, "r");
-    		ch = getc(fileptr1);
-    	   while (ch != EOF) {
-    	        ch = getc(fileptr1);
-    	    }
-    			rewind(fileptr1);
-    			fileptr2 = fopen("replica.c", "w");
-    			ch = getc(fileptr1);
-    	    while (ch != EOF)
-    	    {
-    	        ch = getc(fileptr1);
-    	        if (ch == '\n') temp++;
-    	            if (temp != delete_line)
-    	            {
-    	                putc(ch, fileptr2);
-    	            }
-    	    }
-          putc('\n',fileptr2);
-          fputs(modify.c_str(), fileptr2);
-    			fclose(fileptr1);
-    	    fclose(fileptr2);
-    	    remove(fName);
-    			rename("replica.c", fName);
-        return 0;
-    }
+    		
 
 
 //**********************SERVER FUNCTIONS BELOW**************************

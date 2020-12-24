@@ -17,6 +17,16 @@
 #include <openssl/err.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
+#include <openssl/pem.h>
+#include <openssl/asn1.h>
+#include <openssl/conf.h>
+
+using namespace std;
+
+// Smart pointers to wrap openssl C types that need explicit free
+using BIO_ptr = std::unique_ptr<BIO, decltype(&BIO_free)>;
+using X509_ptr = std::unique_ptr<X509, decltype(&X509_free)>;
+using ASN1_TIME_ptr = std::unique_ptr<ASN1_TIME, decltype(&ASN1_STRING_free)>;
 
 namespace my {
 
@@ -192,10 +202,67 @@ void verify_the_certificate(SSL *ssl, const std::string& expected_hostname)
 #endif
 }
 
+
+// Convert the contents of an openssl BIO to a std::string
+std::string bio_to_string(const BIO_ptr& bio, const int& max_len)
+{
+    // We are careful to do operations based on explicit lengths, not depending
+    // on null terminated character streams except where we ensure the terminator
+
+    // Create a buffer and zero it out
+    char buffer[max_len];
+    memset(buffer, 0, max_len);
+    // Read one smaller than the buffer to make sure we end up with a null
+    // terminator no matter what
+    BIO_read(bio.get(), buffer, max_len - 1);
+    return std::string(buffer);
+}
+
+
 } // namespace my
+
+int gen_user_CSR (char *username){
+    char *str =(char*) malloc (100);
+    (char*) malloc (100);
+    strcpy(str, "./generate_csr.sh ");
+    strcat(str, username); 
+    printf(str);
+    system(str); 
+    free(str);
+    return 0; 
+}
+
+int getcert(char *username){
+    
+    //generate user CSR    
+    //gen_user_CSR(username);
+
+    std::string inFile = "csr.txt";
+    BIO_ptr input(BIO_new(BIO_s_file()), BIO_free);
+    if (BIO_read_filename(input.get(), inFile.c_str()) <= 0)
+    {
+        std::cout << "Error reading file" << std::endl;
+        return 1;
+    }
+
+    // Put the contents of the BIO into a C++ string    
+    std::string cert_details = my::bio_to_string(input, 32768);
+    BIO_reset(input.get());
+
+    // print CSR
+    // std::cout << "User CSR" << std::endl;
+    // std::cout << cert_details << std::endl;
+    // std::cout << std::endl;
+
+
+
+}
 
 int main(int argc, char *argv[])
 {
+
+    getcert("durwaun");
+/***
 	//char *c;
 	std::string name = getpass("Enter username: ");
 	std::string pass = getpass("Enter password: ");
@@ -212,7 +279,7 @@ int main(int argc, char *argv[])
 #endif
 
     /* Set up the SSL context */
-
+/*
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     auto ctx = my::UniquePtr<SSL_CTX>(SSL_CTX_new(SSLv23_client_method()));
 #else
@@ -244,4 +311,6 @@ int main(int argc, char *argv[])
     my::send_http_request(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", name, pass, rcpt_list, file_name);
     std::string response = my::receive_http_message(ssl_bio.get());
     printf("%s", response.c_str());
+
+    */
 }
