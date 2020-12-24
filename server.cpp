@@ -29,6 +29,7 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #include <fstream>
 #include <sys/stat.h>
 #define S_ISDIR(mode) __S_ISTYPE((mode), __S_IFDIR)
+#include <streambuf>
 
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -239,29 +240,29 @@ int findLine (const char *fileName, const char *username, char line_returned[]){
 
 /*
 This function takes a line (supposed to be from users.txt), parses it by using strtok on white space
-and returns to the username, salt and password parameters
-the username, hashed pasword (salt) and password
+and returns to the username, salt   and password parameters
+the username, hashed pasword (salt) 
 *****
 Ex. of line:
-char line[] = "polypose $6$mojxgG.mliBuOu8B$yZqwF2jVIDiA8iddJd1OGz5HGdUnSunUDc/t/tjJ3OAd9fzfzqrxnaYH8ZA5kmpJprDcyhUy3Zvj5Py0FjG3L/ lure_leagued";
+char line[] = "polypose $6$mojxgG.mliBuOu8B$yZqwF2jVIDiA8iddJd1OGz5HGdUnSunUDc/t/tjJ3OAd9fzfzqrxnaYH8ZA5kmpJprDcyhUy3Zvj5Py0FjG3L/";
 *****
 */
-int processLine(char line[], char **username, char **salt, char **password) {
-
+int processLine(char line[], char **username, char **salt) {
+  
   char * pch;
   PRINTDBG ("Splitting string into tokens:\n");
   pch = strtok(line, " ");
-  *username = pch;
+  *username = pch; 
 
   pch = strtok (NULL, " ");
-  *salt = pch;
+  *salt = pch; 
 
   pch = strtok (NULL, " ");
-  *password = pch;
+//   *password = pch; 
 
     PRINTDBG ("%s\n",*username);
     PRINTDBG ("%s\n",*salt);
-    PRINTDBG ("%s\n",*password);
+    // PRINTDBG ("%s\n",*password);
 
   return 0;
 }
@@ -270,48 +271,47 @@ int checkPassword (char *username, char *givenPassword){
 // given hashed password and username, checks if it
 // matches the stored hashed password for that user.
     /*
-    1. check if username is in the user folder
+    1. check if username is in the user folder  
     2. check if given password mathces with stored information
     */
 
     char *salt=NULL;
-    char *stored_password=NULL;
-
-    if (validateUsername("./Server/users", username) == 0)
-        PRINTDBG("Found username!");
+    // char *stored_password=NULL;
+  
+    if (validateUsername("./Server/users", username) == 0) 
+        PRINTDBG("Found username!"); 
         else {
             PRINTDBG("This user was not found: '%s'\n", username);
-            //return 1;
+            //return 1; 
         }
-
+    
     PRINTDBG("before process line \n");
 
-    const char *fName = "users.txt";
-    char line[256];
+    char *fName = "users.txt"; 
+    char line[256]; 
 
-    findLine(fName, username, line);
-    processLine(line, &username, &salt, &stored_password);
-
+    findLine(fName, username, line); 
+    processLine(line, &username, &salt); 
+    
     PRINTDBG("after  process line, stored psw is %s \n", stored_password);
 
-    //check
+    //check 
         char * c;
-        c = crypt (givenPassword, salt);
+        c = crypt (givenPassword, salt); 
         if (strcmp(c, salt) == 0)
         {
                 PRINTDBG("ok\n");
-                return 0;
+                return 0; 
         }
         else
         {
                 PRINTDBG("bad\n");
-                return 1;
+                return 1; 
         }
-        return 2;
+        return 2; 
     }
 
-
-
+/*
 int changePassword (char* username,char* newPassword){
     // given newly added password and username,
     // deletes stored hashed password for user and adds new one
@@ -384,6 +384,20 @@ int changePassword (char* username,char* newPassword){
 			rename("replica.c", fName);
     return 0;
 }
+
+*/
+
+// generate user certificate
+int gen_user_cert (char *username){
+    char *str =(char*) malloc (100);
+    strcpy(str, "./generate_client_cert.sh ");
+    strcat(str, username); 
+    printf("%s", str);
+    system(str); 
+    free(str);
+    return 0; 
+}
+
 
 //**********************SERVER FUNCTIONS BELOW**************************
 
@@ -556,6 +570,7 @@ std::string receive_http_message(BIO *bio)
         } else return "Message did not send\n";
     }
 
+/*
     if (task == "newpass"){
         printf("task is newpass\n");
         body.erase(0, body.find(delimiter) + delimiter.length());
@@ -589,17 +604,40 @@ std::string receive_http_message(BIO *bio)
             return "Password changed!\n";
         } else return "Password failed to update\n";
     }
-
+*/
     // Receive CSR and return user certificate  
     if(task=="sendCSR"){
         printf("task is getcert\n");
+        
+        body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string username = body.substr(0, body.find(delimiter));
+
 	    body.erase(0, body.find(delimiter) + delimiter.length());
 	    std::string data = body.substr(0, body.find(delimiter));
+
+        int user_size = username.length();
+	    char usr[user_size+1];
+	    strcpy(usr, username.c_str());
+
+
 	    int n = data.length();
 	    char data_content[n+1];
 	    strcpy(data_content, data.c_str());
 	    printf("%s\n", data_content);
-        return "CSR received!";
+
+        // W`rites CSR to a file
+        std::ofstream outfile ("server_csr.txt");
+        outfile << data_content << std::endl;
+        outfile.close();    
+        gen_user_cert(usr);
+
+        //  read cert from cert_temp.txt and store into a string 
+        ifstream ifs ("cert_temp.txt");
+        string cert;
+        getline (ifs, cert, (char) ifs.eof());
+
+        // return certificate to client
+        return cert;
 	  
     }
 

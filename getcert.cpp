@@ -187,7 +187,7 @@ void send_http_request_login(BIO *bio, const std::string& line, const std::strin
     BIO_flush(bio);
 }
 
-void send_http_request(BIO *bio, const std::string& header, const std::string& host, const std::string& task, const std::string& data)
+void send_http_request(BIO *bio, const std::string& header, const std::string& host, const std::string& task, const std::string& name, const std::string& data)
 {
     cout << "send_HTTP_request TASK is : " << task << endl;
     std::string request = header + "\r\n";
@@ -196,9 +196,13 @@ void send_http_request(BIO *bio, const std::string& header, const std::string& h
     
     // set task
     request +=  task + "\r\n";
+
+    // set name 
+    request += name + "\r\n";
     
     // set data
     request += data + "\r\n";
+
     
     //request += pass + "\r\n";
 
@@ -264,10 +268,9 @@ std::string bio_to_string(const BIO_ptr& bio, const int& max_len)
 // generate User CSR
 int gen_user_CSR (char *username){
     char *str =(char*) malloc (100);
-    (char*) malloc (100);
     strcpy(str, "./generate_csr.sh ");
     strcat(str, username); 
-    printf(str);
+    printf("%s", str);
     system(str); 
     free(str);
     return 0; 
@@ -301,10 +304,22 @@ std::string request_cert(BIO *bio, char *username){
 
     // my::send_http_request(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", "sendCSR", cert_content.c_str());
 
-    my::send_http_request(bio, "POST / HTTP/1.1", "duckduckgo.com", "sendCSR", cert_details);
+    my::send_http_request(bio, "POST / HTTP/1.1", "duckduckgo.com", "sendCSR", username, cert_details);
     std::string response = my::receive_http_message(bio);
     printf("%s", response.c_str()); 
     
+    char *str = (char*)malloc(sizeof(char) * 100);
+    strcpy(str, "Client/users/");
+    strcat(str, username); 
+    strcat(str, "/certificates/certificate.cert.pem"); 
+
+    //  create file at location with the name stored in 'str' 
+    ofstream MyFile(str);
+    MyFile <<  response.c_str();
+    MyFile.close();
+
+    free(str);
+
     return cert_details; 
 }
 
@@ -364,15 +379,17 @@ int main(int argc, char *argv[])
 cout << "Enter username: ";
 std::string name ;
 cin >> name;
-std::string pass = getpass("Enter password: ");
 char usr[name.length()+1];
 strcpy(usr, name.c_str());
+
+std::string pass = getpass("Enter password: ");
 
 auto ssl_bio = init_bio();
 
 my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", name, pass);
 std::string response = my::receive_http_message(ssl_bio.get());
 printf("%s", response.c_str());
+
 
 auto ssl_bio2 = init_bio();
 // Second HTTP request that sends CSR to server
