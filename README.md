@@ -22,7 +22,7 @@ sudo apt-get install libssl-dev
 
 I. SOURCE TREE CONTENTS
 ```
-1. install-unpriv.sh
+1. install-priv.sh
 2. getcert.cpp
 3. changepw.cpp
 4. sendmsg.cpp
