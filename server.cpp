@@ -89,7 +89,7 @@ std::string getMsg(char* username){
 
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "../users");
+    strcpy(path, "../users/");
     strcat(path, username);
 	strcat(path, "/mailbox");
 
@@ -179,7 +179,7 @@ int storeMessage(std::string& target, std::string& msg){
     //*****************************************FILE PATH HERE***************************************
     char *path;
     path = (char *) malloc(151);
-    strcpy(path, "../users");
+    strcpy(path, "../users/");
     strcat(path, target.c_str());
 	strcat(path, "/mailbox");
     //cout << path << "\n";
@@ -606,7 +606,7 @@ std::string receive_http_message(BIO *bio)
 
     //getcert response
     if(task=="login"){
-	    printf("task is login\n");
+	    //printf("task is login\n");
 	    body.erase(0, body.find(delimiter) + delimiter.length());
 	    std::string username = body.substr(0, body.find(delimiter));
 	    body.erase(0, body.find(delimiter) + delimiter.length());
@@ -628,7 +628,7 @@ std::string receive_http_message(BIO *bio)
 
     //sendmsg response
     if(task=="send"){
-        printf("task is send\n");
+        //printf("task is send\n");
 	    body.erase(0, body.find(delimiter) + delimiter.length());
 	    std::string username = body.substr(0, body.find(delimiter));
 	    body.erase(0, body.find(delimiter) + delimiter.length());
@@ -649,8 +649,8 @@ std::string receive_http_message(BIO *bio)
         if (checkPassword(usr, psw) == 1){
 		    return "Wrong password or user.\n";
 	    }
-        cout << "Hello\n";
-        cout << rcpt_list << "\n";
+        //cout << "Hello\n";
+        //cout << rcpt_list << "\n";
         //printf("%s\n", rcpt_list.c_str());
         //printf("%s\n", msg.c_str());
        //printf("Entering storeMessage\n");
@@ -732,7 +732,7 @@ std::string receive_http_message(BIO *bio)
     }
 
     if(task=="recv"){
-	    printf("task is login\n");
+	    printf("task is recv\n");
 	    body.erase(0, body.find(delimiter) + delimiter.length());
 	    std::string username = body.substr(0, body.find(delimiter));
 	    body.erase(0, body.find(delimiter) + delimiter.length());
