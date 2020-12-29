@@ -467,29 +467,12 @@ int signMessage(char *cert_name, char *input_file, char *signed_file){
 
 std::string request_RCPT_cert(BIO *bio, char *username){
     
-    // std::string inFile = username;
-    // BIO_ptr input(BIO_new(BIO_s_file()), BIO_free);
-    // if (BIO_read_filename(input.get(), inFile.c_str()) <= 0)
-    // {
-    //     std::cout << "Error reading file" << endl;
-    //     return "Error readin file";
-    // }
-
-    // Put the contents of the BIO into a C++ string    
-    // std::string cert_details = my::bio_to_string(input, 42768);
-    // BIO_reset(input.get());
-
-
     my::send_http_request(bio, "POST / HTTP/1.1", "duckduckgo.com", "getRCPT", username, username);
     std::string response = my::receive_http_message(bio);
     printf("%s", response.c_str()); 
     
-    // char *str = (char*)malloc(sizeof(char) * 100);
-    // strcpy(str, "../users/");
-    // strcat(str, username); 
-    // strcat(str, "/certificates/certificate.cert.pem"); 
-
-    char str [100] = "lalala.pem";
+    
+    char str [100] = "temp_recipient.pem";
     //  create file at location with the name stored in 'str' 
     ofstream MyFile(str);
 
@@ -500,9 +483,6 @@ std::string request_RCPT_cert(BIO *bio, char *username){
     }
     MyFile <<  end_of_headers;
     MyFile.close();
-
-    free(str);
-
     return "cert_details"; 
 }
 
@@ -515,37 +495,174 @@ int generateCertPath (char *username, char *path){
     return 0; 
 }
 
+int generateKeyPath (char *username, char *path){
+    //ex: ../users/polypose/certificates/key.pem
+    strcpy(path, "../users/");
+    strcat(path, username);
+	strcat(path, "/certificates/key.pem");
+    return 0; 
+}
+
+int generateSigningPath (char *username, char *path){
+    //ex: ../users/polypose/certificates/signing.pem
+    strcpy(path, "../users/");
+    strcat(path, username);
+	strcat(path, "/certificates/signing.pem");
+    return 0; 
+}
+
+bool file_exist(const char *fileName)
+{
+    std::ifstream infile(fileName);
+    return infile.good();
+}
+
+int cmd_exec(char *cmd_string){
+    // execute a system cmd and return exit code 
+
+    int status = std::system(cmd_string); 
+    //std::cout << std::ifstream("test.txt").rdbuf();
+    //std::cout << "Exit code: " << WEXITSTATUS(status) << std::endl;
+    
+    return WEXITSTATUS(status);
+    
+}
+
+int loginCert(char *sender){
+    // user certificate login 
+
+    // check if cert exists     
+    char user_cert[250];
+    generateCertPath(sender, user_cert); 
+    cout << "USerCert: " << user_cert << "\n";
+    
+    if (!file_exist(user_cert)){
+        cout << "User certificate not found!\n";
+        return 1;
+    }
+    
+    // check if cert match ppk
+    char cmd_str[300];
+    strcpy(cmd_str, "./check_cert.sh ");
+    strcat(cmd_str, "../users/");
+    strcat(cmd_str, sender);
+	strcat(cmd_str, "/certificates");    
+    int checkCert = cmd_exec(cmd_str);
+    
+    if (checkCert != 0){
+        cout << "User certificate is invalid! Please login...\n";
+        return 1;
+    }
+    
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {   
-    char user[100] = "wamara";
 
-    /*
+    /***
+    
+    TODO
+    
+    ./sendmgs <sender_name> <rcpt_name> <message_file>
+    ./sendmsg polypose wamara MessageFile.txt
+    
+    * Params : 
+        - user = clientName
+        - rcpt_list = recipients 
+        - message = file name containing the message
+    
+    o Login with certificate 
+    
+    - requests rcpts user_certs (public keys) - only for one user at a time ...
+    
+    - Message encryption and signing 
+    - Send encrypted msg to server 
+        
+    ***/
+
+    if 	(argc == 3) {
+		cout << "Wrong number of arguments.\n";
+        cout << "example of usage: ./sendmsg username_sender username_receiver message_file_name.txt\n";
+		return 1;
+	}
+	
+
+    // read sender as first parameter of sendmsg
+    char sender[100];
+    strcpy(sender, argv[1]);
+    cout << "Sender: " << sender << "\n";
+    
+    // read recipient as second parameter 
+    // TODO : read a list of recipients 
+    
+    char rcpt[100];
+    strcpy(rcpt, argv[2]);
+    cout << "Recipient: " << rcpt << "\n";
+
+    // read message to send from message_file, as third parameter 
+    char message_file[100];
+    strcpy(message_file, argv[3]);
+    cout << "MessageFile: " << message_file << "\n";
+
+    
+    // Login with certificate 
+    int senderLogin = loginCert(sender);
+    if (senderLogin != 0) {
+        // login error 
+        cout << "Login with Certificate failed!\n";
+        
+        // check if cert match ppk
+        char cmd_str[300];
+        strcpy(cmd_str, "./getcert ");
+        strcat(cmd_str, sender);
+        int retGetCert = cmd_exec(cmd_str);
+        
+        if (retGetCert != 0){
+            cout << "Invalid user name or password \n";
+            return 1;
+        }
+    
+    }
+    
+    // getting the recipient's certificate from server
     auto bio2 = init_bio(); 
-    request_RCPT_cert(bio2.get(), user); 
-    return 0; 
-    */
+    request_RCPT_cert(bio2.get(), rcpt); 
 
-    char path[100]; 
-    generateCertPath(user, path); 
+
+//return 0;
+
+    char path[250]; 
+    generateCertPath(sender, path); 
     cout << endl;
 
-    char cert_name[] = "../users/polypose/certificates/certificate.cert.pem";
-    char private_key[]      = "polypose.key.pem";
-    char signer_cert_name[] = "polypose.signing";
+    char rcpt_cert[]        = "temp_recipient.pem";
+    //char rcpt_cert[]        = "../users/polypose/certificates/certificate.cert.pem";
     
+    
+    char private_key[250];   // "../users/polypose/certificates/key.pem"
+    generateKeyPath(sender, private_key); 
+    
+    char sender_cert[250];
+    generateCertPath(sender, sender_cert); 
+    
+    char signer_cert_name[250];   // "../users/polypose/certificates/signing.pem"
+    generateSigningPath(sender, signer_cert_name); 
     
     // create signing cert : cert + private key
-    std::ifstream if_a(cert_name, std::ios_base::binary);
+    std::ifstream if_a(sender_cert, std::ios_base::binary);
     std::ifstream if_b(private_key, std::ios_base::binary);
     std::ofstream of_c(signer_cert_name, std::ios_base::binary);
     of_c << if_a.rdbuf() << if_b.rdbuf();
 
 
-    char input_file[] = "input.txt";
+    //char input_file[] = "input.txt";
+    char input_file[100];
+    strcpy(input_file, argv[3]);
     char enc_file[]   = "enc_message.txt";
     char signedFile[] = "signed_message.txt";
 
-    encMessage(cert_name, input_file, enc_file);
+    encMessage(rcpt_cert, input_file, enc_file);
     
     signMessage(signer_cert_name, enc_file, signedFile); 
     

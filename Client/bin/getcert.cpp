@@ -281,9 +281,15 @@ std::string request_cert(BIO *bio, char *username){
     //generate user CSR    
     gen_user_CSR(username);
 
-    std::string inFile = "csr.txt";
+    //std::string inFile = "csr.txt";
+
+    char csr_file[250];    
+    strcpy(csr_file, "../users/");
+    strcat(csr_file, username); 
+    strcat(csr_file, "/certificates/csr.pem"); 
+    
     BIO_ptr input(BIO_new(BIO_s_file()), BIO_free);
-    if (BIO_read_filename(input.get(), inFile.c_str()) <= 0)
+    if (BIO_read_filename(input.get(), csr_file) <= 0)
     {
         std::cout << "Error reading file" << endl;
         return "Error readin file";
@@ -298,13 +304,14 @@ std::string request_cert(BIO *bio, char *username){
     std::string response = my::receive_http_message(bio);
     printf("%s", response.c_str()); 
     
-    char *str = (char*)malloc(sizeof(char) * 100);
-    strcpy(str, "../users/");
-    strcat(str, username); 
-    strcat(str, "/certificates/certificate.cert.pem"); 
+    // char *str = (char*)malloc(sizeof(char) * 100);
+    char cert_file[250];
+    strcpy(cert_file, "../users/");
+    strcat(cert_file, username); 
+    strcat(cert_file, "/certificates/certificate.cert.pem"); 
 
-    //  create file at location with the name stored in 'str' 
-    ofstream MyFile(str);
+    //  create file at location with the name stored in 'cert_file' 
+    ofstream MyFile(cert_file);
 
     char *end_of_headers = strstr(&response[0], "-----BEGIN CERTIFICATE-----");
     while (end_of_headers == nullptr) {
@@ -314,7 +321,6 @@ std::string request_cert(BIO *bio, char *username){
     MyFile <<  end_of_headers;
     MyFile.close();
 
-    free(str);
 
     return cert_details; 
 }
@@ -374,30 +380,56 @@ SSL_set_tlsext_host_name(my::get_ssl(ssl_bio.get()), "duckduckgo.com");
 int main(int argc, char *argv[])
 {
 
-cout << "Enter username: ";
 
-// TODO
-//std::string name  ;
-//cin >> name;
-std::string name = "polypose";
-
-char usr[name.length()+1];
-strcpy(usr, name.c_str());
-
-// TODO
-//std::string pass = getpass("Enter password: ");
-std::string pass = "lure_leagued";
+    /***
+    
+    TODO: 
+        - login faild is password is wrong
+        - validate username ...
+    
+    ***/
 
 
-auto ssl_bio = init_bio();
 
-my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", name, pass);
-std::string response = my::receive_http_message(ssl_bio.get());
-printf("%s", response.c_str());
+    //std::string name = "polypose";
+    //std::string pass = "lure_leagued";
+
+    //std::string name = "wamara";
+    //std::string pass = "stirrer_hewer's";
 
 
-auto ssl_bio2 = init_bio();
-// Second HTTP request that sends CSR to server
-std::string csr = request_cert(ssl_bio2.get(), usr);
+    // read the options parameters
+    if 	(argc == 1) {
+        cout << "Provide your username as first parameter\n";
+        cout << "Example: ./getcert polypose \n";
+        return 1;
+    }
+
+    char user[100];
+    strcpy(user, argv[1]);
+
+
+    // TODO
+    char str_info[100] = "Enter password for '";
+    strcat(str_info, user);
+    strcat(str_info, "' : ");
+    
+    //std::string pass = getpass("Enter password: ");
+    std::string pass = getpass(str_info);
+    //std::string pass = "lure_leagued";
+
+
+    auto ssl_bio = init_bio();
+
+    my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", user, pass);
+    std::string response = my::receive_http_message(ssl_bio.get());
+    printf("%s", response.c_str());
+
+
+    auto ssl_bio2 = init_bio();
+    // Second HTTP request that sends CSR to server
+    std::string csr = request_cert(ssl_bio2.get(), user);
+
+    return 0;
 
 }

@@ -20,5 +20,14 @@ openssl req  \
 # to the server
 
 
-cp ${1}.csr.pem ../users/${1}/publicKey
-cp ${1}.csr.pem csr.txt
+#cp ${1}.csr.pem ../users/${1}/publicKey
+#cp ${1}.csr.pem csr.txt
+
+
+#cp ${1}.csr.pem ../users/${1}/certificates/csr.pem
+#cp ${1}.csr.pem csr.txt
+
+mv -f ${1}.key.pem  "../users/${1}/certificates/key.pem"
+mv -f ${1}.csr.pem  "../users/${1}/certificates/csr.pem"
+
+    
