@@ -171,6 +171,43 @@ void send_http_request_login(BIO *bio, const std::string &line,
   BIO_flush(bio);
 }
 
+
+/*
+  my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1",
+                                "duckduckgo.com", name, pass, rcpt_list,
+                                file_name);
+*/
+void send_message(BIO *bio, const std::string &line,
+                             const std::string &host, 
+                             const std::string &rcpt_list,
+                             const std::string &file_name) {
+  std::string request = line + "\r\n";
+  request += "Host: " + host + "\r\n";
+  request += "\r\n";
+  request += std::string("send") + "\r\n";
+  //request += name + "\r\n";
+  //request += pass + "\r\n";
+  request += rcpt_list + "\r\n";
+
+  std::fstream f;
+  std::string msg = "";
+  printf("%s\n", file_name.c_str());
+  f.open(file_name);
+  if (f.is_open()) {
+    std::string tp;
+
+    while (getline(f, tp)) {
+      msg += tp + "\n";
+    }
+  }
+  request += msg + "\r\n";
+  printf("%s\n", msg.c_str());
+
+  BIO_write(bio, request.data(), request.size());
+  BIO_flush(bio);
+}
+
+
 void send_http_request(BIO *bio, const std::string& header, const std::string& host, const std::string& task, const std::string& name, const std::string& data)
 {
     cout << "send_HTTP_request TASK is : " << task << endl;
@@ -628,9 +665,6 @@ int main(int argc, char *argv[])
     auto bio2 = init_bio(); 
     request_RCPT_cert(bio2.get(), rcpt); 
 
-
-//return 0;
-
     char path[250]; 
     generateCertPath(sender, path); 
     cout << endl;
@@ -666,8 +700,10 @@ int main(int argc, char *argv[])
     signMessage(signer_cert_name, enc_file, signedFile); 
     
     
-    return 0 ; 
+   // return 0 ; 
 
+    //////////////////////////////////////////////
+/*
     cout << "Enter username: ";
     std::string name ;
     cin >> name;
@@ -679,11 +715,12 @@ int main(int argc, char *argv[])
 
     std::string rcpt_list;
     std::string file_name;
-    std::cout << "Enter recipients: \n";
+    std::cout << "Enter recipient: \n";
     std::cin >> rcpt_list;
     std::cout << "Enter message file name: \n";
     std::cin >> file_name;
     std::cout << "Please wait";
+*/
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     SSL_library_init();
     SSL_load_error_strings();
@@ -719,11 +756,7 @@ int main(int argc, char *argv[])
     }
     my::verify_the_certificate(my::get_ssl(ssl_bio.get()), "duckduckgo.com");
 
-    my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1",
-                                "duckduckgo.com", name, pass, rcpt_list,
-                                file_name);
+    my::send_message(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", rcpt, signedFile);
     std::string response = my::receive_http_message(ssl_bio.get());
     printf("%s", response.c_str());
-
-    
 }

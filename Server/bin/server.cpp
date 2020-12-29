@@ -182,7 +182,7 @@ int storeMessage(std::string& target, std::string& msg){
     strcpy(path, "../users/");
     strcat(path, target.c_str());
 	strcat(path, "/mailbox");
-    //cout << path << "\n";
+    cout << path << "\n";
 
     //Check valid rcpt
     if(isDirectoryExists(path)==1){
@@ -629,32 +629,11 @@ std::string receive_http_message(BIO *bio)
 
     //sendmsg response
     if(task=="send"){
-        //printf("task is send\n");
-	    body.erase(0, body.find(delimiter) + delimiter.length());
-	    std::string username = body.substr(0, body.find(delimiter));
-	    body.erase(0, body.find(delimiter) + delimiter.length());
-	    std::string password = body.substr(0, body.find(delimiter));
         body.erase(0, body.find(delimiter) + delimiter.length());
 	    std::string rcpt_list = body.substr(0, body.find(delimiter));
         body.erase(0, body.find(delimiter) + delimiter.length());
 	    std::string msg = body.substr(0, body.find(delimiter));
 
-	    int n = username.length();
-	    char usr[n+1];
-	    strcpy(usr, username.c_str());
-	    int m = password.length();
-	    char psw[m+1];
-	    strcpy(psw, password.c_str());
-	    //printf("%s\n", usr);
-	    //printf("%s\n", psw);
-        if (checkPassword(usr, psw) == 1){
-		    return "Wrong password or user.\n";
-	    }
-        //cout << "Hello\n";
-        //cout << rcpt_list << "\n";
-        //printf("%s\n", rcpt_list.c_str());
-        //printf("%s\n", msg.c_str());
-       //printf("Entering storeMessage\n");
         if (storeMessage(rcpt_list, body) == 0){
             return "Message sent!\n";
         } else return "Message did not send\n";
