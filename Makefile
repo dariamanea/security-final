@@ -6,8 +6,7 @@
 # Executable file "cstore"
 server: server.o
 	#gcc -o server server.o -lcrypt
-	g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lcrypt -Wall
-
+	g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -Wall -std=c++17 -lstdc++fs -lcrypt
 
 getcert: getcert.cpp
 	g++ -o getcert getcert.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lcrypt -Wall
