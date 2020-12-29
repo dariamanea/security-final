@@ -29,6 +29,7 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #include <fstream>
 #include <crypt.h>
 #include <sys/stat.h>
+#include <filesystem>
 #define S_ISDIR(mode) __S_ISTYPE((mode), __S_IFDIR)
 #include <streambuf>
 
@@ -93,6 +94,9 @@ std::string getMsg(char* username){
     strcat(path, username);
 	strcat(path, "/mailbox");
 
+	if(std::filesystem::is_empty(path) == true){
+		return "No messages\n";
+	}
     if(isDirectoryExists(path)==1){
         //printf("Directory found\n");
         //check number of files in subdirectory
