@@ -31,6 +31,7 @@ check: check if the request it’s valid (ex: if there are any messages pending 
 #include <sys/stat.h>
 #define S_ISDIR(mode) __S_ISTYPE((mode), __S_IFDIR)
 #include <streambuf>
+#include <filesystem>
 
 #include <openssl/bio.h>
 #include <openssl/err.h>
@@ -70,8 +71,8 @@ int countFilesInDirectories (char* dirname, char* recipient ) {
 
 	// generate mailbox path for recipient
 	strcpy(mailbox, dirname);
-	strcat(mailbox,"/");
-	strcat(mailbox,recipient);
+	//strcat(mailbox,"/");
+	//strcat(mailbox,recipient);
 	//PRINTDBG("Mailbox: %s \n", mailbox);
 
 
@@ -84,6 +85,7 @@ int countFilesInDirectories (char* dirname, char* recipient ) {
 	return count - 2;
 }
 
+
 std::string getMsg(char* username){
     //*********************************************FILE PATH HERE******************************************
 
@@ -93,6 +95,13 @@ std::string getMsg(char* username){
     strcat(path, username);
 	strcat(path, "/mailbox");
 
+/*
+if (countFilesInDirectories(path, username) == 0 ){
+*/
+   // if(std::filesystem::is_empty(path) == true){
+		//return "No messages\n";
+	//}
+    
     if(isDirectoryExists(path)==1){
         //printf("Directory found\n");
         //check number of files in subdirectory
