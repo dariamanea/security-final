@@ -557,10 +557,7 @@ bool file_exist(const char *fileName)
 int cmd_exec(char *cmd_string){
     // execute a system cmd and return exit code 
 
-    int status = std::system(cmd_string); 
-    //std::cout << std::ifstream("test.txt").rdbuf();
-    //std::cout << "Exit code: " << WEXITSTATUS(status) << std::endl;
-    
+    int status = std::system(cmd_string);
     return WEXITSTATUS(status);
     
 }
@@ -596,28 +593,7 @@ int loginCert(char *sender){
 
 int main(int argc, char *argv[])
 {   
-
-    /***
-    
-    TODO
-    
-    ./sendmgs <sender_name> <rcpt_name> <message_file>
-    ./sendmsg polypose wamara MessageFile.txt
-    
-    * Params : 
-        - user = clientName
-        - rcpt_list = recipients 
-        - message = file name containing the message
-    
-    o Login with certificate 
-    
-    - requests rcpts user_certs (public keys) - only for one user at a time ...
-    
-    - Message encryption and signing 
-    - Send encrypted msg to server 
-        
-    ***/
-        if 	(argc != 4) {
+    if 	(argc != 4) {
 		cout << "Wrong number of arguments.\n";
         cout << "example of usage: ./sendmsg username_sender username_receiver message_file_name.txt\n";
 		return 1;
@@ -630,7 +606,6 @@ int main(int argc, char *argv[])
     cout << "Sender: " << sender << "\n";
     
     // read recipient as second parameter 
-    // TODO : read a list of recipients 
     
     char rcpt[100];
     strcpy(rcpt, argv[2]);
@@ -700,27 +675,7 @@ int main(int argc, char *argv[])
     signMessage(signer_cert_name, enc_file, signedFile); 
     
     
-   // return 0 ; 
 
-    //////////////////////////////////////////////
-/*
-    cout << "Enter username: ";
-    std::string name ;
-    cin >> name;
-    char usr[name.length()+1];
-    strcpy(usr, name.c_str());
-
-    std::string pass = getpass("Enter password: ");
-
-
-    std::string rcpt_list;
-    std::string file_name;
-    std::cout << "Enter recipient: \n";
-    std::cin >> rcpt_list;
-    std::cout << "Enter message file name: \n";
-    std::cin >> file_name;
-    std::cout << "Please wait";
-*/
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     SSL_library_init();
     SSL_load_error_strings();

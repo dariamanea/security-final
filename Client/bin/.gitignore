@@ -5,3 +5,7 @@ sendmsg.o
 test
 getcert
 signed_message.txt
+../users/polypose/certificates/certificate.cert.pem
+
+../../Server/users/polypose/certificates/polypose.cert.pem
+../../Server/bin/cert_temp.txt
