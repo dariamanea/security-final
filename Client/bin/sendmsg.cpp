@@ -581,7 +581,7 @@ int main(int argc, char *argv[])
         
     ***/
 
-    if 	(argc == 3) {
+    if 	(argc != 3) {
 		cout << "Wrong number of arguments.\n";
         cout << "example of usage: ./sendmsg username_sender username_receiver message_file_name.txt\n";
 		return 1;
