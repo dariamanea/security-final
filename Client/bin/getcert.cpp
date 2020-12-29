@@ -423,8 +423,13 @@ int main(int argc, char *argv[])
 
     my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", user, pass);
     std::string response = my::receive_http_message(ssl_bio.get());
-    printf("%s", response.c_str());
 
+     char *end_of_headers = strstr(&response[0], "Wrong password");
+
+    if (end_of_headers != nullptr) {
+        cout << "Wrong password\n";
+        return 1; 
+    }
 
     auto ssl_bio2 = init_bio();
     // Second HTTP request that sends CSR to server

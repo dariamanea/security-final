@@ -622,7 +622,9 @@ std::string receive_http_message(BIO *bio)
 	    if (checkPassword(usr, psw) == 0){
 		    return "Logged in.\n";
 	    }
-
+        else {
+            return "Wrong password\n";
+        }
     }
 
     //sendmsg response
