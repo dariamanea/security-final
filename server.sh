@@ -20,7 +20,7 @@ openssl req -config intermediate/openssl.cnf \
 
 # create certificate
 openssl ca -config intermediate/openssl.cnf \
-      -subj '/C=US/ST=New York/O=Daria Ltd/OU=Daria Ltd Web Services/CN=www.example.com' \
+      -subj '/C=US/ST=New York/O=Daria Ltd/OU=Daria Ltd Web Services/CN=www.duckduckgo.com' \
       -passin pass:foobar \
       -batch \
       -extensions server_cert -days 375 -notext -md sha256 \

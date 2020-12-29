@@ -120,7 +120,7 @@ public:
 
 std::string receive_some_data(BIO *bio)
 {
-    char buffer[1024];
+    char buffer[5000];
     int len = BIO_read(bio, buffer, sizeof(buffer));
     if (len < 0) {
         my::print_errors_and_throw("error in BIO_read");
@@ -272,7 +272,7 @@ int gen_user_CSR (char *username){
     strcat(str, username); 
     printf("%s", str);
     system(str); 
-    free(str);
+    // free(str);
     return 0; 
 }
 
@@ -309,13 +309,21 @@ std::string request_cert(BIO *bio, char *username){
     printf("%s", response.c_str()); 
     
     char *str = (char*)malloc(sizeof(char) * 100);
-    strcpy(str, "Client/users/");
+    strcpy(str, "../users/");
     strcat(str, username); 
     strcat(str, "/certificates/certificate.cert.pem"); 
 
     //  create file at location with the name stored in 'str' 
     ofstream MyFile(str);
-    MyFile <<  response.c_str();
+
+    char *end_of_headers = strstr(&response[0], "-----BEGIN CERTIFICATE-----");
+    while (end_of_headers == nullptr) {
+        response +=  my::receive_http_message(bio);
+        end_of_headers = strstr(&response[0], "-----BEGIN CERTIFICATE-----");
+    }
+
+       // MyFile <<  response.c_str();
+    MyFile <<  end_of_headers;
     MyFile.close();
 
     free(str);

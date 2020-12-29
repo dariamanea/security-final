@@ -553,7 +553,7 @@ public:
 
 std::string receive_some_data(BIO *bio)
 {
-    char buffer[1024];
+    char buffer[5000];
     int len = BIO_read(bio, buffer, sizeof(buffer));
     if (len < 0) {
         my::print_errors_and_throw("error in BIO_read");
@@ -604,7 +604,6 @@ std::string receive_http_message(BIO *bio)
     std::string delimiter = "\r\n";
     std::string task = body.substr(0, body.find(delimiter));
 
-    //getcert response
     if(task=="login"){
 	    //printf("task is login\n");
 	    body.erase(0, body.find(delimiter) + delimiter.length());
@@ -716,7 +715,7 @@ std::string receive_http_message(BIO *bio)
 	    printf("%s\n", data_content);
 
         // Writes CSR to a file
-        std::ofstream outfile ("server_csr.txt");
+        std::ofstream outfile ("csr.txt");
         outfile << data_content << std::endl;
         outfile.close();    
         gen_user_cert(usr);
@@ -790,6 +789,7 @@ int main(int argc, char *argv[])
     SSL_CTX_set_min_proto_version(ctx.get(), TLS1_2_VERSION);
 #endif
 
+// change the server certificate name from server-certificate.pem to intermediate CERT 
     if (SSL_CTX_use_certificate_file(ctx.get(), "server-certificate.pem", SSL_FILETYPE_PEM) <= 0) {
         my::print_errors_and_exit("Error loading server certificate");
     }
