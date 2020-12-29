@@ -729,6 +729,38 @@ std::string receive_http_message(BIO *bio)
         return cert;
 	  
     }
+    
+      if (task == "getRCPT"){
+       
+        printf("task is getRCPT\n");
+        
+        body.erase(0, body.find(delimiter) + delimiter.length());
+	    std::string username = body.substr(0, body.find(delimiter));
+
+	    // body.erase(0, body.find(delimiter) + delimiter.length());
+	    // std::string data = body.substr(0, body.find(delimiter));
+
+        int user_size = username.length();
+	    char usr[user_size+1];
+	    strcpy(usr, username.c_str());
+        
+        //  read cert from cert_temp.txt and store into a string 
+        char path[300]; 
+        strcpy(path, "../users/");
+        strcat(path, usr);
+	    strcat(path, "/certificates/");
+        strcat(path, usr); 
+        strcat(path, ".cert.pem");
+        printf ("%s\n", path); 
+
+        // ifstream ifs ("cert_temp.txt");
+        ifstream ifs (path);
+        string cert;
+        getline (ifs, cert, (char) ifs.eof());
+
+        // return certificate to client
+        return cert; 
+    }
 
     if(task=="recv"){
 	    printf("task is recv\n");

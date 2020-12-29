@@ -1,3 +1,4 @@
+#include <ctime>
 #include <memory>
 #include <stdarg.h>
 #include <stdexcept>
@@ -139,34 +140,60 @@ std::string receive_http_message(BIO *bio)
     return headers + "\r\n" + body;
 }
 
-void send_http_request(BIO *bio, const std::string& line, const std::string& host, const std::string& name, const std::string& pass, const std::string& rcpt_list, const std::string& file_name)
+void send_http_request_login(BIO *bio, const std::string &line,
+                             const std::string &host, const std::string &name,
+                             const std::string &pass,
+                             const std::string &rcpt_list,
+                             const std::string &file_name) {
+  std::string request = line + "\r\n";
+  request += "Host: " + host + "\r\n";
+  request += "\r\n";
+  request += std::string("send") + "\r\n";
+  request += name + "\r\n";
+  request += pass + "\r\n";
+  request += rcpt_list + "\r\n";
+
+  std::fstream f;
+  std::string msg = "";
+  printf("%s\n", file_name.c_str());
+  f.open(file_name);
+  if (f.is_open()) {
+    std::string tp;
+
+    while (getline(f, tp)) {
+      msg += tp + "\n";
+    }
+  }
+  request += msg + "\r\n";
+  printf("%s\n", msg.c_str());
+
+  BIO_write(bio, request.data(), request.size());
+  BIO_flush(bio);
+}
+
+void send_http_request(BIO *bio, const std::string& header, const std::string& host, const std::string& task, const std::string& name, const std::string& data)
 {
-    std::string request = line + "\r\n";
+    cout << "send_HTTP_request TASK is : " << task << endl;
+    std::string request = header + "\r\n";
     request += "Host: " + host + "\r\n";
     request += "\r\n";
-    request += std::string("send") + "\r\n";
+    
+    // set task
+    request +=  task + "\r\n";
+
+    // set name 
     request += name + "\r\n";
-    request += pass + "\r\n";
-    request += rcpt_list + "\r\n";
+    
+    // set data
+    request += data + "\r\n";
 
-    std::fstream f;
-    std::string msg = "";
-    printf("%s\n", file_name.c_str());
-    f.open(file_name);
-    if(f.is_open()){
-        std::string tp;
-        
-        while(getline(f, tp)){
-            msg += tp + "\n";
-        }
-
-    }
-    request += msg + "\r\n";
-    printf("%s\n", msg.c_str());
+    
+    //request += pass + "\r\n";
 
     BIO_write(bio, request.data(), request.size());
     BIO_flush(bio);
 }
+
 
 SSL *get_ssl(BIO *bio)
 {
@@ -438,8 +465,70 @@ int signMessage(char *cert_name, char *input_file, char *signed_file){
 }
 
 
+std::string request_RCPT_cert(BIO *bio, char *username){
+    
+    // std::string inFile = username;
+    // BIO_ptr input(BIO_new(BIO_s_file()), BIO_free);
+    // if (BIO_read_filename(input.get(), inFile.c_str()) <= 0)
+    // {
+    //     std::cout << "Error reading file" << endl;
+    //     return "Error readin file";
+    // }
+
+    // Put the contents of the BIO into a C++ string    
+    // std::string cert_details = my::bio_to_string(input, 42768);
+    // BIO_reset(input.get());
+
+
+    my::send_http_request(bio, "POST / HTTP/1.1", "duckduckgo.com", "getRCPT", username, username);
+    std::string response = my::receive_http_message(bio);
+    printf("%s", response.c_str()); 
+    
+    // char *str = (char*)malloc(sizeof(char) * 100);
+    // strcpy(str, "../users/");
+    // strcat(str, username); 
+    // strcat(str, "/certificates/certificate.cert.pem"); 
+
+    char str [100] = "lalala.pem";
+    //  create file at location with the name stored in 'str' 
+    ofstream MyFile(str);
+
+    char *end_of_headers = strstr(&response[0], "-----BEGIN CERTIFICATE-----");
+    while (end_of_headers == nullptr) {
+        response +=  my::receive_http_message(bio);
+        end_of_headers = strstr(&response[0], "-----BEGIN CERTIFICATE-----");
+    }
+    MyFile <<  end_of_headers;
+    MyFile.close();
+
+    free(str);
+
+    return "cert_details"; 
+}
+
+
+int generateCertPath (char *username, char *path){
+    //ex: ../users/polypose/certificates/certificate.cert.pem
+    strcpy(path, "../users/");
+    strcat(path, username);
+	strcat(path, "/certificates/certificate.cert.pem");
+    return 0; 
+}
+
 int main(int argc, char *argv[])
-{
+{   
+    char user[100] = "wamara";
+
+    /*
+    auto bio2 = init_bio(); 
+    request_RCPT_cert(bio2.get(), user); 
+    return 0; 
+    */
+
+    char path[100]; 
+    generateCertPath(user, path); 
+    cout << endl;
+
     char cert_name[] = "../users/polypose/certificates/certificate.cert.pem";
     char private_key[]      = "polypose.key.pem";
     char signer_cert_name[] = "polypose.signing";
@@ -452,8 +541,6 @@ int main(int argc, char *argv[])
     of_c << if_a.rdbuf() << if_b.rdbuf();
 
 
-
-    
     char input_file[] = "input.txt";
     char enc_file[]   = "enc_message.txt";
     char signedFile[] = "signed_message.txt";
@@ -461,8 +548,6 @@ int main(int argc, char *argv[])
     encMessage(cert_name, input_file, enc_file);
     
     signMessage(signer_cert_name, enc_file, signedFile); 
-    
-    
     
     
     return 0 ; 
@@ -518,8 +603,9 @@ int main(int argc, char *argv[])
     }
     my::verify_the_certificate(my::get_ssl(ssl_bio.get()), "duckduckgo.com");
 
-
-    my::send_http_request(ssl_bio.get(), "GET / HTTP/1.1", "duckduckgo.com", name, pass, rcpt_list, file_name);
+    my::send_http_request_login(ssl_bio.get(), "GET / HTTP/1.1",
+                                "duckduckgo.com", name, pass, rcpt_list,
+                                file_name);
     std::string response = my::receive_http_message(ssl_bio.get());
     printf("%s", response.c_str());
 
