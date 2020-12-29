@@ -112,6 +112,6 @@ $ ./server
 or 
 
 ```
-$ g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lycrypt -Wall
+$ g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -Wall -std=c++17 -lstdc++fs -lcrypt
 ```
 
