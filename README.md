@@ -40,8 +40,8 @@ II. HOW TO EXECUTE
 $ chmod +x *
 $ sudo ./install.sh
 To run the test script, please run ./start_server.sh in a different terminal
-$ ./start_server
-$ ./test.sh
+$ sudo ./start_server
+$ sudo ./test.sh
 
  # Please use password "stirrer_hewer's" for first prompt (wamara)
  # Please input password "lure_leagued" when prompted (which is for user polypose) 
