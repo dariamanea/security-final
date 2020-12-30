@@ -98,9 +98,11 @@ std::string getMsg(char* username){
 /*
 if (countFilesInDirectories(path, username) == 0 ){
 */
-   // if(std::filesystem::is_empty(path) == true){
-		//return "No messages\n";
-	//}
+//    if(std::filesystem::is_empty(path) == true){
+       if (countFilesInDirectories(path, username) == 0 ){
+
+		return "No messages\n";
+	}
     
     if(isDirectoryExists(path)==1){
         //printf("Directory found\n");
