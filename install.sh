@@ -14,6 +14,6 @@ cd ../../
 cd Client/bin
 make getcert
 make sendmsg
-make recmsg
+make recvmsg
 chmod +x *
 
