@@ -37,22 +37,19 @@ I. SOURCE TREE CONTENTS
 
 II. HOW TO EXECUTE
 ```
-1. Move files to an empty directory
-2. Execute the following:
+$ chmod +x *
+$ sudo ./install.sh
+To run the test script, please run ./start_server.sh in a different terminal
+$ ./start_server
+$ ./test.sh
 
-sudo bash install-priv.sh
+ # Please use password "stirrer_hewer's" for first prompt (wamara)
+ # Please input password "lure_leagued" when prompted (which is for user polypose) 
 
-3. Move to Server/bin and execute the following:
-
-./server
-
-4. Move to Client/bin and execute the four programs as a user:
-
-./getcert, ./changepw, ./sendmsg, ./recvmsg
+######
 
 Note:
-user logs in to sendmsg and recvmsg with username and password
-A message should be in a file in the Client/bin and user gives filename when prompted
+user logs in to recvmsg with username and password
 recvmsg prints message to stdout
 sendmsg can only accept one recipient at a time
 ```
@@ -80,18 +77,18 @@ The server is based on the example given here: https://quuxplusone.github.io/blo
       >example user
         >certificate
         >mailbox
-        >hashedPassword
 ```
 
 
 V. TESTING
 ```
-Functionality testing was conducted to ensure a user can send and receive messages. There was also testing to make sure that a user password could not be read by others.
+Functionality testing was conducted to ensure a user can send an encrypted and signed message. We also tested receive messages. There was also testing to make sure that a user password could not be read by others.
+
 ```
 
-# Below is not part of submission
+# Note on server certificate and keys
 
-Run the following commands in the same folder as server:
+We created the private key, public key and certificate for the server like this:
 
 ```
 $ openssl ecparam -genkey -name prime256v1 -noout -out server-private-key.pem
@@ -101,15 +98,4 @@ $ openssl ec -in server-private-key.pem -pubout -out server-public-key.pem
 $ openssl req -new -x509 -sha256 -key server-private-key.pem -subj "/CN=duckduckgo.com" -out server-certificate.pem
 ```
 
-
-To compile server.cpp use the following:
-```
-$ make 
-$ ./server
-```
-or 
-
-```
-$ g++ -o server server.cpp -I /usr/local/ssl/include -L /usr/local/ssl/lib -lssl -lcrypto -lycrypt -Wall
-```
 
