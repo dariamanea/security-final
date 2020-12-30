@@ -1,8 +1,7 @@
 #!/bin/bash
 
-mkdir Client
 cd Client
-mkdir bin certAuth users 
+mkdir bin users 
 cd users
 
 
@@ -12,7 +11,7 @@ for i in ${input[@]}
 do
 	mkdir $i
     cd $i
-    mkdir publicKey certificates mailbox
+    mkdir publicKey certificates
     cd ..
 done
 
