@@ -1,7 +1,7 @@
 # security-final
 Final project for Security I
 
-December 23, 2020
+December 29, 2020
 
 Daria Manea, Qiran (Tony) Li, Jacob Jordan
 
@@ -10,6 +10,7 @@ NOTES
 The script creates a shell user and group called "server" with password "security"
 There were difficulties with properly implementing some of the certificate and encryption functions. 
 In addition, we were not able to achieve the shedding and deshedding safety features as well as the containers we wanted.
+The changepw.cpp file is included for reference but is not used by the program.
 ```
 
 0. DEPENDANCIES 
