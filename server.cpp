@@ -378,7 +378,7 @@ int checkPassword (char *username, char *givenPassword){
     
     PRINTDBG("before process line \n");
 
-    char *fName = "users.txt"; 
+    const char *fName = "users.txt"; 
     char line[256]; 
 
     findLine(fName, username, line); 
@@ -688,7 +688,7 @@ std::string receive_http_message(BIO *bio)
 	    if (checkPassword(usr, psw) == 1){
 		    return "Wrong password or user.\n";
 	    }
-        //*******************************FILE PATH here******************************************
+        *******************************FILE PATH here******************************************
         char path[5] = "../users";
         if (countFilesInDirectories(path, usr) > 0){
             return "Please read mail before changing password\n";
