@@ -70,7 +70,6 @@ The server is based on the example given here: https://quuxplusone.github.io/blo
       >example user
         >certificate
         >mailbox
-    >serverCert
   >Client
     >bin
       >getcert.cpp
@@ -82,7 +81,6 @@ The server is based on the example given here: https://quuxplusone.github.io/blo
         >certificate
         >mailbox
         >hashedPassword
-    >certAuth
 ```
 
 
