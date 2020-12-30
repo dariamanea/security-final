@@ -6,6 +6,20 @@ sudo addgroup server
 
 sudo useradd -g server -m server -p security
 
+
+##### root directory
+
+ 
+chmod +x *
+ ./create-server-structure.sh
+ ./create-client-structure.sh
+
+
+###### changing to server
+
+cd Server/bin
+
+
 # create private key 
 # openssl ecparam -genkey -name prime256v1 -noout -out server-private-key.pem
 
@@ -25,17 +39,6 @@ sudo chown server: server-certificate.pem
 sudo chmod g+rw,o+rw server-certificate.pem
 
 
-##### root directory
-
- 
-chmod +x *
- ./create-server-structure.sh
- ./create-client-structure.sh
-
-
-###### changing to server
-
-cd Server/bin
 sudo chown server: users.txt
 
 chmod +x *
@@ -56,6 +59,4 @@ make recvmsg
 chmod +x *
 
 #############
-
-
 
