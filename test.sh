@@ -9,13 +9,13 @@
 cd Client/bin 
 
 # This will create certificates for user wamara and polypose
-./getcert wamara
-./getcert polypose 
+sudo ./getcert wamara
+sudo ./getcert polypose 
 
 #this will send the encrypted and signed message that is in input.txt from polypose to wamara 
 # this will store the encrypted and signed message from input.txt in Server/users/wamara/mailbox
-./sendmsg polypose wamara input.txt
+sudo ./sendmsg polypose wamara input.txt
 
 #To check message, you can run ./rcvmsg and input the username polypose and password ("lure_leagued") 
 #or wamara ("stirrer_hewer's"). 
-./recvmsg
+sudo ./recvmsg
