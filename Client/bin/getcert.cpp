@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
 
 
     // read the options parameters
-    if 	(argc == 1) {
+    if 	(argc != 2) {
         cout << "Provide your username as first parameter\n";
         cout << "Example: ./getcert polypose \n";
         return 1;
@@ -414,10 +414,7 @@ int main(int argc, char *argv[])
     strcat(str_info, user);
     strcat(str_info, "' : ");
     
-    //std::string pass = getpass("Enter password: ");
     std::string pass = getpass(str_info);
-    //std::string pass = "lure_leagued";
-
 
     auto ssl_bio = init_bio();
 
