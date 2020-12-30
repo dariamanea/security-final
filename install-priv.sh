@@ -4,7 +4,15 @@ sudo bash create-client-structure.sh
 
 sudo bash create-server-structure.sh
 
-make
+make server
+
+make getcert
+
+make recvmsg
+
+make sendmsg
+
+make changepw
 
 sudo addgroup server
 

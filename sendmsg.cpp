@@ -226,13 +226,13 @@ int gen_user_CSR (char *username){
     (char*) malloc (100);
     strcpy(str, "./generate_csr.sh ");
     strcat(str, username); 
-    printf(str);
+    printf("%s",str);
     system(str); 
     free(str);
     return 0; 
 }
 
-int getcert(char *username){
+int getcert(const char *username){
     
     //generate user CSR    
     //gen_user_CSR(username);
@@ -254,7 +254,7 @@ int getcert(char *username){
     // std::cout << cert_details << std::endl;
     // std::cout << std::endl;
 
-
+     return 0;
 
 }
 
@@ -278,8 +278,8 @@ int main(int argc, char *argv[])
     SSL_load_error_strings();
 #endif
 
-    /* Set up the SSL context */
-/*
+    * Set up the SSL context *
+*
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     auto ctx = my::UniquePtr<SSL_CTX>(SSL_CTX_new(SSLv23_client_method()));
 #else
