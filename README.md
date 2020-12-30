@@ -88,6 +88,8 @@ The server is based on the example given here: https://quuxplusone.github.io/blo
 
 V. TESTING
 ```
-Functionality testing was conducted to ensure a user can send and receive messages. There was also testing to make sure that a user password could not be read by others.
+Functionality testing was conducted to ensure a user can send and receive messages and was automated with the test.sh script. 
+There was also testing to make sure that a user password could not be read by others.
+Users who were not part of the server group were unable to read the users.txt file.
 ```
 
