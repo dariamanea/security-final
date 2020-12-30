@@ -16,3 +16,6 @@ cd Client/bin
 # this will store the encrypted and signed message from input.txt in Server/users/wamara/mailbox
 ./sendmsg polypose wamara input.txt
 
+#To check message, you can run ./rcvmsg and input the username polypose and password ("lure_leagued") 
+#or wamara ("stirrer_hewer's"). 
+./recvmsg
