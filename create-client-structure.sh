@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd Client
-mkdir bin users 
+mkdir users 
 cd users
 
 
