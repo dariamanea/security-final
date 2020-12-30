@@ -45,6 +45,7 @@ $ sudo ./test.sh
 
  # Please use password "stirrer_hewer's" for first prompt (wamara)
  # Please input password "lure_leagued" when prompted (which is for user polypose) 
+ # Then login as wamara to recvmsg
 
 ######
 
