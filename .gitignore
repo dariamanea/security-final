@@ -1,1 +1,3 @@
 Server/users/polypose/certificates/polypose.cert.pem
+Client/bin/enc_message.txt
+Client/bin/server-certificate.pem
